@@ -43,29 +43,40 @@ defmodule Plausible.Application do
   defp finch_pool_config() do
     config = Application.fetch_env!(:plausible, Plausible.Finch)
 
-    pool_config = %{
-      :default => [size: config[:default_pool_size], count: config[:default_pool_count]],
-      "https://vendors.paddle.com" => [
-        protocol: :http2,
-        count: 50,
-        conn_opts: [transport_opts: [timeout: 15_000]]
-      ],
-      "https://www.googleapis.com" => [
-        protocol: :http2,
-        count: 200,
-        conn_opts: [transport_opts: [timeout: 15_000]]
-      ],
-      "https://analyticsreporting.googleapis.com" => [
-        protocol: :http2,
-        count: 200,
-        conn_opts: [transport_opts: [timeout: 15_000]]
-      ],
-      "https://icons.duckduckgo.com" => [
-        protocol: :http2,
-        count: 100,
-        conn_opts: [transport_opts: [timeout: 15_000]]
-      ]
-    }
+    pool_config =
+      case config[:preset] do
+        "SELF_HOSTED" ->
+          %{
+            "https://www.googleapis.com" => [protocol: :http2],
+            "https://analyticsreporting.googleapis.com" => [protocol: :http2],
+            "https://icons.duckduckgo.com" => [protocol: :http2]
+          }
+
+        _other ->
+          %{
+            :default => [size: config[:default_pool_size], count: config[:default_pool_count]],
+            "https://vendors.paddle.com" => [
+              protocol: :http2,
+              count: 50,
+              conn_opts: [transport_opts: [timeout: 15_000]]
+            ],
+            "https://www.googleapis.com" => [
+              protocol: :http2,
+              count: 200,
+              conn_opts: [transport_opts: [timeout: 15_000]]
+            ],
+            "https://analyticsreporting.googleapis.com" => [
+              protocol: :http2,
+              count: 200,
+              conn_opts: [transport_opts: [timeout: 15_000]]
+            ],
+            "https://icons.duckduckgo.com" => [
+              protocol: :http2,
+              count: 100,
+              conn_opts: [transport_opts: [timeout: 15_000]]
+            ]
+          }
+      end
 
     sentry_dsn = Application.get_env(:sentry, :dsn)
 
