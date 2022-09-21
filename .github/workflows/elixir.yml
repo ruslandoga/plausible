@@ -4,12 +4,12 @@ on:
   push:
     branches: [master, stable]
   pull_request:
-    branches: [master, stable]
+    branches: [master, my-build, stable]
 
 jobs:
   build:
     name: Build and test
-    runs-on: buildjet-4vcpu-ubuntu-2004
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
