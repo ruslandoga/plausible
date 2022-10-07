@@ -261,7 +261,8 @@ config :plausible, Plausible.ClickhouseRepo,
   queue_interval: 2000,
   url: ch_db_url,
   flush_interval_ms: ch_flush_interval_ms,
-  max_buffer_size: ch_max_buffer_size
+  max_buffer_size: ch_max_buffer_size,
+  show_sensitive_data_on_connection_error: true
 
 case mailer_adapter do
   "Bamboo.PostmarkAdapter" ->
