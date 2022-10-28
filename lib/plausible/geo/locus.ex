@@ -1,5 +1,7 @@
 defmodule Plausible.Geo.Locus do
   @moduledoc false
+  require Logger
+
   @behaviour Plausible.Geo.Adapter
   @db :geolocation
 
@@ -42,7 +44,8 @@ defmodule Plausible.Geo.Locus do
         nil
 
       {:error, reason} ->
-        raise "failed to lookup ip address #{inspect(ip_address)}: " <> inspect(reason)
+        Logger.error("failed to lookup ip address: " <> inspect(reason))
+        nil
     end
   end
 end
