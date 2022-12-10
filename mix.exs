@@ -62,7 +62,7 @@ defmodule Plausible.MixProject do
       {:bcrypt_elixir, "~> 2.0"},
       {:bypass, "~> 2.1", only: [:dev, :test]},
       {:cachex, "~> 3.4"},
-      {:clickhouse_ecto, git: "https://github.com/plausible/clickhouse_ecto.git"},
+      {:chto, github: "ruslandoga/chto"},
       {:combination, "~> 0.0.3"},
       {:connection, "~> 1.1", override: true},
       {:cors_plug, "~> 3.0"},
@@ -124,7 +124,7 @@ defmodule Plausible.MixProject do
     [
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
-      test: ["ecto.create --quiet", "ecto.migrate", "test", "clean_clickhouse"],
+      test: ["test", "clean_clickhouse"],
       sentry_recompile: ["compile", "deps.compile sentry --force"]
     ]
   end
