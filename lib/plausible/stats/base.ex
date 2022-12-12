@@ -33,29 +33,29 @@ defmodule Plausible.Stats.Base do
     q =
       from(
         e in "events",
-        where: e.domain == ^site.domain,
-        where: e.timestamp >= ^first_datetime and e.timestamp < ^last_datetime
+        where: e.domain == type(^site.domain, :string),
+        where: e.timestamp >= type(^first_datetime, :datetime) and e.timestamp < type(^last_datetime, :datetime)
       )
       |> add_sample_hint(query)
 
     q =
       case query.filters["event:page"] do
         {:is, page} ->
-          from(e in q, where: e.pathname == ^page)
+          from(e in q, where: e.pathname == type(^page, :string))
 
         {:is_not, page} ->
-          from(e in q, where: e.pathname != ^page)
+          from(e in q, where: e.pathname != type(^page, :string))
 
         {:matches, glob_expr} ->
           regex = page_regex(glob_expr)
-          from(e in q, where: fragment("match(?, ?)", e.pathname, ^regex))
+          from(e in q, where: fragment("match(?, ?)", e.pathname, type(^regex, :string)))
 
         {:does_not_match, glob_expr} ->
           regex = page_regex(glob_expr)
-          from(e in q, where: fragment("not(match(?, ?))", e.pathname, ^regex))
+          from(e in q, where: fragment("not(match(?, ?))", e.pathname, type(^regex, :string)))
 
         {:member, list} ->
-          from(e in q, where: e.pathname in ^list)
+          from(e in q, where: e.pathname in type(^list, {:array, :string}))
 
         nil ->
           q
@@ -64,10 +64,10 @@ defmodule Plausible.Stats.Base do
     q =
       case query.filters["event:name"] do
         {:is, name} ->
-          from(e in q, where: e.name == ^name)
+          from(e in q, where: e.name == type(^name, :string))
 
         {:member, list} ->
-          from(e in q, where: e.name in ^list)
+          from(e in q, where: e.name in type(^list, {:array, :string}))
 
         nil ->
           q
@@ -76,14 +76,14 @@ defmodule Plausible.Stats.Base do
     q =
       case query.filters["event:goal"] do
         {:is, :page, path} ->
-          from(e in q, where: e.pathname == ^path)
+          from(e in q, where: e.pathname == type(^path, :string))
 
         {:matches, :page, expr} ->
           regex = page_regex(expr)
-          from(e in q, where: fragment("match(?, ?)", e.pathname, ^regex))
+          from(e in q, where: fragment("match(?, ?)", e.pathname, type(^regex, :string)))
 
         {:is, :event, event} ->
-          from(e in q, where: e.name == ^event)
+          from(e in q, where: e.name == type(^event, :string))
 
         nil ->
           q
@@ -95,14 +95,14 @@ defmodule Plausible.Stats.Base do
           if value == "(none)" do
             from(
               e in q,
-              where: fragment("not has(?, ?)", field(e, :"meta.key"), ^prop_name)
+              where: fragment("not has(?, ?)", field(e, :"meta.key"), type(^prop_name, :string))
             )
           else
             from(
               e in q,
               inner_lateral_join: meta in "meta",
               as: :meta,
-              where: meta.key == ^prop_name and meta.value == ^value
+              where: meta.key == type(^prop_name, :string) and meta.value == type(^value, :string)
             )
           end
 
@@ -110,7 +110,7 @@ defmodule Plausible.Stats.Base do
           if value == "(none)" do
             from(
               e in q,
-              where: fragment("has(?, ?)", field(e, :"meta.key"), ^prop_name)
+              where: fragment("has(?, ?)", field(e, :"meta.key"), type(^prop_name, :string))
             )
           else
             from(
@@ -118,8 +118,8 @@ defmodule Plausible.Stats.Base do
               left_lateral_join: meta in "meta",
               as: :meta,
               where:
-                (meta.key == ^prop_name and meta.value != ^value) or
-                  fragment("not has(?, ?)", field(e, :"meta.key"), ^prop_name)
+                (meta.key == type(^prop_name, :string) and meta.value != type(^value, :string)) or
+                  fragment("not has(?, ?)", field(e, :"meta.key"), type(^prop_name, :string))
             )
           end
 
@@ -147,8 +147,10 @@ defmodule Plausible.Stats.Base do
     sessions_q =
       from(
         s in "sessions",
-        where: s.domain == ^site.domain,
-        where: s.start >= ^first_datetime and s.start < ^last_datetime
+        where: s.domain == type(^site.domain, :string),
+        where:
+          s.start >= type(^first_datetime, :datetime) and
+            s.start < type(^last_datetime, :datetime)
       )
       |> add_sample_hint(query)
 
@@ -186,7 +188,7 @@ defmodule Plausible.Stats.Base do
             {:is, "(none)"} ->
               from(
                 s in sessions_q,
-                where: fragment("not has(?, ?)", field(s, :"entry_meta.key"), ^prop_name)
+                where: fragment("not has(?, ?)", field(s, :"entry_meta.key"), type(^prop_name, :string))
               )
 
             {:is, value} ->
@@ -194,13 +196,13 @@ defmodule Plausible.Stats.Base do
                 s in sessions_q,
                 inner_lateral_join: meta in "entry_meta",
                 as: :meta,
-                where: meta.key == ^prop_name and meta.value == ^value
+                where: meta.key == type(^prop_name, :string) and meta.value == type(^value, :string)
               )
 
             {:is_not, "(none)"} ->
               from(
                 s in sessions_q,
-                where: fragment("has(?, ?)", field(s, :"entry_meta.key"), ^prop_name)
+                where: fragment("has(?, ?)", field(s, :"entry_meta.key"), type(^prop_name, :string))
               )
 
             {:is_not, value} ->
@@ -209,8 +211,8 @@ defmodule Plausible.Stats.Base do
                 left_lateral_join: meta in "entry_meta",
                 as: :meta,
                 where:
-                  (meta.key == ^prop_name and meta.value != ^value) or
-                    fragment("not has(?, ?)", field(s, :"entry_meta.key"), ^prop_name)
+                  (meta.key == type(^prop_name, :string) and meta.value != type(^value, :string)) or
+                    fragment("not has(?, ?)", field(s, :"entry_meta.key"), type(^prop_name, :string))
               )
 
             _ ->
@@ -228,23 +230,23 @@ defmodule Plausible.Stats.Base do
       case filter do
         {:is, value} ->
           value = db_prop_val(prop_name, value)
-          from(s in sessions_q, where: fragment("? = ?", field(s, ^prop_name), ^value))
+          from(s in sessions_q, where: fragment("? = ?", field(s, ^prop_name), type(^value, field(s, ^prop_name))))
 
         {:is_not, value} ->
           value = db_prop_val(prop_name, value)
-          from(s in sessions_q, where: fragment("? != ?", field(s, ^prop_name), ^value))
+          from(s in sessions_q, where: fragment("? != ?", field(s, ^prop_name), type(^value, field(s, ^prop_name)))
 
         {:member, values} ->
           list = Enum.map(values, &db_prop_val(prop_name, &1))
-          from(s in sessions_q, where: fragment("? in tuple(?)", field(s, ^prop_name), ^list))
+          from(s in sessions_q, where: fragment("? in tuple(?)", field(s, ^prop_name), type(^list, {:array, :string})))
 
         {:matches, expr} ->
           regex = page_regex(expr)
-          from(s in sessions_q, where: fragment("match(?, ?)", field(s, ^prop_name), ^regex))
+          from(s in sessions_q, where: fragment("match(?, ?)", field(s, ^prop_name), type(^regex, :string)))
 
         {:does_not_match, expr} ->
           regex = page_regex(expr)
-          from(s in sessions_q, where: fragment("not(match(?, ?))", field(s, ^prop_name), ^regex))
+          from(s in sessions_q, where: fragment("not(match(?, ?))", field(s, ^prop_name), type(^regex, :string)))
 
         nil ->
           sessions_q

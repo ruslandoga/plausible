@@ -62,12 +62,18 @@ defmodule Plausible.Session.WriteBuffer do
       sessions ->
         Logger.info("Flushing #{length(sessions)} sessions")
 
-        sessions =
+        rows =
           sessions
-          |> Enum.map(&(Map.from_struct(&1) |> Map.delete(:__meta__)))
+          |> Plausible.ClickhouseSession.dump_to_rows()
           |> Enum.reverse()
 
-        Plausible.ClickhouseRepo.insert_all(Plausible.ClickhouseSession, sessions)
+        {types, fields} = Plausible.ClickhouseSession.types_and_fields()
+
+        {:ok, _} =
+          Chto.insert_stream(Plausible.ClickhouseRepo, "sessions", rows,
+            types: types,
+            fields: fields
+          )
     end
   end
 

@@ -42,12 +42,13 @@ defmodule Plausible.Stats.Breakdown do
             fragment(
               "notEmpty(multiMatchAllIndices(?, array(?)) as indices)",
               e.pathname,
-              ^page_regexes
+              type(^page_regexes, {:array, :string})
             ),
           group_by: fragment("index"),
           select: %{
             index: fragment("arrayJoin(indices) as index"),
-            goal: fragment("concat('Visit ', array(?)[index])", ^page_exprs)
+            goal:
+              fragment("concat('Visit ', array(?)[index])", type(^page_exprs, {:array, :string}))
           }
         )
         |> select_event_metrics(metrics)

@@ -11,7 +11,7 @@ defmodule Plausible.Stats.Clickhouse do
       ClickhouseRepo.one(
         from e in "events",
           select: fragment("min(?)", e.timestamp),
-          where: e.domain == ^site.domain
+          where: e.domain == type(^site.domain, :string)
       )
 
     case datetime do
@@ -29,7 +29,7 @@ defmodule Plausible.Stats.Clickhouse do
   def imported_pageview_count(site) do
     Plausible.ClickhouseRepo.one(
       from i in "imported_visitors",
-        where: i.site_id == ^site.id,
+        where: i.site_id == type(^site.id, :u64),
         select: sum(i.pageviews)
     )
   end

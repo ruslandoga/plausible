@@ -1,4 +1,5 @@
 defmodule Plausible.Event.WriteBuffer do
+  alias Plausible.ClickhouseEvent
   use GenServer
   require Logger
 
@@ -61,8 +62,14 @@ defmodule Plausible.Event.WriteBuffer do
 
       events ->
         Logger.info("Flushing #{length(events)} events")
-        events = Enum.map(events, &(Map.from_struct(&1) |> Map.delete(:__meta__)))
-        Plausible.ClickhouseRepo.insert_all(Plausible.ClickhouseEvent, events)
+        rows = ClickhouseEvent.dump_to_rows(events)
+        {fields, types} = ClickhouseEvent.fields_and_types()
+
+        {:ok, _} =
+          Chto.insert_stream(Plausible.ClickhouseRepo, "events", rows,
+            fields: fields,
+            types: types
+          )
     end
   end
 
