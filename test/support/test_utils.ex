@@ -75,21 +75,88 @@ defmodule Plausible.TestUtils do
   end
 
   def create_events(events) do
-    events =
-      Enum.map(events, fn event ->
-        Factory.build(:event, event) |> Map.from_struct() |> Map.delete(:__meta__)
+    fields = Plausible.ClickhouseEvent.__schema__(:fields)
+
+    types =
+      Enum.map(fields, fn field ->
+        case {field, Plausible.ClickhouseEvent.__schema__(:type, field)} do
+          {:country_code, :string} -> {:string, 2}
+          {:city_geoname_id, :integer} -> :u32
+          {_, t} when t in [:string, {:array, :string}] -> t
+          {_, :integer} -> :u64
+          {_, :naive_datetime} -> :datetime
+        end
       end)
 
-    Plausible.ClickhouseRepo.insert_all("events", events)
+    events =
+      Enum.map(events, fn event ->
+        event = Factory.build(:event, event)
+
+        Enum.map(fields, fn field ->
+          case Map.get(event, field) do
+            %DateTime{} = dt ->
+              dt
+              |> DateTime.truncate(:second)
+              |> DateTime.to_naive()
+
+            other ->
+              other
+          end
+        end)
+      end)
+
+    Chto.insert_stream(
+      Plausible.ClickhouseRepo,
+      "events",
+      events,
+      fields: fields,
+      types: types
+    )
   end
 
   def create_sessions(sessions) do
-    sessions =
-      Enum.map(sessions, fn session ->
-        Factory.build(:ch_session, session) |> Map.from_struct() |> Map.delete(:__meta__)
+    # TODO
+    fields = Plausible.ClickhouseSession.__schema__(:fields) |> :lists.reverse()
+
+    types =
+      Enum.map(fields, fn field ->
+        case {field, Plausible.ClickhouseSession.__schema__(:type, field)} do
+          {:country_code, :string} -> {:string, 2}
+          {:city_geoname_id, :integer} -> :u32
+          {:sign, :integer} -> :i8
+          {:pageviews, :integer} -> :i32
+          {:events, :integer} -> :i32
+          {:duration, :integer} -> :u32
+          {_, t} when t in [:string, :boolean, {:array, :string}] -> t
+          {_, :integer} -> :u64
+          {_, :naive_datetime} -> :datetime
+        end
       end)
 
-    Plausible.ClickhouseRepo.insert_all("sessions", sessions)
+    sessions =
+      Enum.map(sessions, fn session ->
+        session = Factory.build(:ch_session, session)
+
+        Enum.map(fields, fn field ->
+          case Map.get(session, field) do
+            %DateTime{} = dt ->
+              dt
+              |> DateTime.truncate(:second)
+              |> DateTime.to_naive()
+
+            other ->
+              other
+          end
+        end)
+      end)
+
+    Chto.insert_stream(
+      Plausible.ClickhouseRepo,
+      "sessions",
+      sessions,
+      fields: fields,
+      types: types
+    )
   end
 
   def log_in(%{user: user, conn: conn}) do

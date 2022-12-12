@@ -29,7 +29,7 @@ defmodule Plausible.ClickhouseSession do
     field :referrer, :string
     field :referrer_source, :string
 
-    field :country_code, :string, default: ""
+    field :country_code, :string, default: <<0, 0>>
     field :subdivision1_code, :string, default: ""
     field :subdivision2_code, :string, default: ""
     field :city_geoname_id, :integer, default: 0

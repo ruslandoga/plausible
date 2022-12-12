@@ -59,7 +59,7 @@ defmodule Plausible.Factory do
       is_bounce: false,
       browser: "",
       browser_version: "",
-      country_code: "",
+      country_code: <<0, 0>>,
       screen_size: "",
       operating_system: "",
       operating_system_version: ""
@@ -94,7 +94,7 @@ defmodule Plausible.Factory do
       utm_term: "",
       browser: "",
       browser_version: "",
-      country_code: "",
+      country_code: <<0, 0>>,
       screen_size: "",
       operating_system: "",
       operating_system_version: "",

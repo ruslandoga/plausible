@@ -20,7 +20,7 @@ defmodule Plausible.ClickhouseEvent do
     field :utm_content, :string, default: ""
     field :utm_term, :string, default: ""
 
-    field :country_code, :string, default: ""
+    field :country_code, :string, default: <<0, 0>>
     field :subdivision1_code, :string, default: ""
     field :subdivision2_code, :string, default: ""
     field :city_geoname_id, :integer, default: 0
