@@ -62,7 +62,7 @@ defmodule Plausible.MixProject do
       {:bcrypt_elixir, "~> 2.0"},
       {:bypass, "~> 2.1", only: [:dev, :test]},
       {:cachex, "~> 3.4"},
-      {:chto, github: "ruslandoga/chto"},
+      {:chto, github: "ruslandoga/chto", branch: "fix-in-array"},
       {:combination, "~> 0.0.3"},
       {:connection, "~> 1.1", override: true},
       {:cors_plug, "~> 3.0"},
@@ -116,7 +116,8 @@ defmodule Plausible.MixProject do
       {:siphash, "~> 3.2"},
       {:timex, "~> 3.7"},
       {:ua_inspector, "~> 3.0"},
-      {:ex_doc, "~> 0.28", only: :dev, runtime: false}
+      {:ex_doc, "~> 0.28", only: :dev, runtime: false},
+      {:rexbug, "~> 1.0", only: [:dev, :test]}
     ]
   end
 
