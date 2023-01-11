@@ -71,7 +71,7 @@ defmodule Plausible.TestUtils do
         Factory.build(:pageview, pageview) |> Map.from_struct() |> Map.delete(:__meta__)
       end)
 
-    Plausible.ClickhouseRepo.insert_all("events", pageviews)
+    Plausible.ClickhouseRepo.insert_all(Plausible.ClickhouseEvent, pageviews)
   end
 
   def create_events(events) do
@@ -80,7 +80,7 @@ defmodule Plausible.TestUtils do
         Factory.build(:event, event) |> Map.from_struct() |> Map.delete(:__meta__)
       end)
 
-    Plausible.ClickhouseRepo.insert_all("events", events)
+    Plausible.ClickhouseRepo.insert_all(Plausible.ClickhouseEvent, events)
   end
 
   def create_sessions(sessions) do
@@ -89,7 +89,7 @@ defmodule Plausible.TestUtils do
         Factory.build(:ch_session, session) |> Map.from_struct() |> Map.delete(:__meta__)
       end)
 
-    Plausible.ClickhouseRepo.insert_all("sessions", sessions)
+    Plausible.ClickhouseRepo.insert_all(Plausible.ClickhouseSession, sessions)
   end
 
   def log_in(%{user: user, conn: conn}) do
