@@ -1,5 +1,6 @@
 defmodule Plausible.Google.BufferTest do
   use Plausible.DataCase, async: false
+  alias Plausible.Google.{ImportedVisitor, ImportedSource, ImportedOperatingSystem}
 
   import Ecto.Query
   alias Plausible.Google.Buffer
@@ -29,14 +30,14 @@ defmodule Plausible.Google.BufferTest do
     {:ok, pid} = Buffer.start_link()
 
     imported_visitors = build_records(9, :imported_visitors, site)
-    assert :ok == Buffer.insert_many(pid, "imported_visitors", imported_visitors)
-    assert Buffer.size(pid, "imported_visitors") == 9
-    assert imported_count(site, "imported_visitors") == 0, "expected not to have flushed"
+    assert :ok == Buffer.insert_many(pid, ImportedVisitor, imported_visitors)
+    assert Buffer.size(pid, ImportedVisitor) == 9
+    assert imported_count(site, ImportedVisitor) == 0, "expected not to have flushed"
 
     imported_visitors = build_records(1, :imported_visitors, site)
-    assert :ok == Buffer.insert_many(pid, "imported_visitors", imported_visitors)
-    assert Buffer.size(pid, "imported_visitors") == 0
-    assert imported_count(site, "imported_visitors") == 10, "expected to have flushed"
+    assert :ok == Buffer.insert_many(pid, ImportedVisitor, imported_visitors)
+    assert Buffer.size(pid, ImportedVisitor) == 0
+    assert imported_count(site, ImportedVisitor) == 10, "expected to have flushed"
   end
 
   @tag :slow
@@ -44,33 +45,33 @@ defmodule Plausible.Google.BufferTest do
     {:ok, pid} = Buffer.start_link()
 
     imported_visitors = build_records(9, :imported_visitors, site)
-    assert :ok == Buffer.insert_many(pid, "imported_visitors", imported_visitors)
-    assert Buffer.size(pid, "imported_visitors") == 9
-    assert imported_count(site, "imported_visitors") == 0, "expected not to have flushed"
+    assert :ok == Buffer.insert_many(pid, ImportedVisitor, imported_visitors)
+    assert Buffer.size(pid, ImportedVisitor) == 9
+    assert imported_count(site, ImportedVisitor) == 0, "expected not to have flushed"
 
     imported_sources = build_records(1, :imported_sources, site)
-    assert :ok == Buffer.insert_many(pid, "imported_sources", imported_sources)
-    assert Buffer.size(pid, "imported_sources") == 1
-    assert imported_count(site, "imported_visitors") == 0, "expected not to have flushed"
+    assert :ok == Buffer.insert_many(pid, ImportedSource, imported_sources)
+    assert Buffer.size(pid, ImportedSource) == 1
+    assert imported_count(site, ImportedVisitor) == 0, "expected not to have flushed"
 
     imported_visitors = build_records(1, :imported_visitors, site)
-    assert :ok == Buffer.insert_many(pid, "imported_visitors", imported_visitors)
-    assert Buffer.size(pid, "imported_visitors") == 0
-    assert imported_count(site, "imported_visitors") == 10, "expected to have flushed"
+    assert :ok == Buffer.insert_many(pid, ImportedVisitor, imported_visitors)
+    assert Buffer.size(pid, ImportedVisitor) == 0
+    assert imported_count(site, ImportedVisitor) == 10, "expected to have flushed"
 
     imported_sources = build_records(9, :imported_sources, site)
-    assert :ok == Buffer.insert_many(pid, "imported_sources", imported_sources)
-    assert Buffer.size(pid, "imported_sources") == 0
-    assert imported_count(site, "imported_sources") == 10, "expected to have flushed"
+    assert :ok == Buffer.insert_many(pid, ImportedSource, imported_sources)
+    assert Buffer.size(pid, ImportedSource) == 0
+    assert imported_count(site, ImportedSource) == 10, "expected to have flushed"
   end
 
   test "insert_many/3 flushes buffer automatically with many records", %{site: site} do
     {:ok, pid} = Buffer.start_link()
 
     imported_visitors = build_records(50, :imported_visitors, site)
-    assert :ok == Buffer.insert_many(pid, "imported_visitors", imported_visitors)
-    assert Buffer.size(pid, "imported_visitors") == 0
-    assert imported_count(site, "imported_visitors") == 50, "expected to have flushed"
+    assert :ok == Buffer.insert_many(pid, ImportedVisitor, imported_visitors)
+    assert Buffer.size(pid, ImportedVisitor) == 0
+    assert imported_count(site, ImportedVisitor) == 50, "expected to have flushed"
   end
 
   @tag :slow
@@ -78,22 +79,22 @@ defmodule Plausible.Google.BufferTest do
     {:ok, pid} = Buffer.start_link()
 
     imported_sources = build_records(1, :imported_sources, site)
-    Buffer.insert_many(pid, "imported_sources", imported_sources)
+    Buffer.insert_many(pid, ImportedSource, imported_sources)
 
     imported_visitors = build_records(1, :imported_visitors, site)
-    Buffer.insert_many(pid, "imported_visitors", imported_visitors)
+    Buffer.insert_many(pid, ImportedVisitor, imported_visitors)
 
     imported_operating_systems = build_records(2, :imported_operating_systems, site)
-    Buffer.insert_many(pid, "imported_operating_systems", imported_operating_systems)
+    Buffer.insert_many(pid, ImportedOperatingSystem, imported_operating_systems)
 
     assert :ok == Buffer.flush(pid, :timer.seconds(4))
 
-    assert Buffer.size(pid, "imported_sources") == 0
-    assert Buffer.size(pid, "imported_visitors") == 0
-    assert Buffer.size(pid, "imported_operating_systems") == 0
+    assert Buffer.size(pid, ImportedSource) == 0
+    assert Buffer.size(pid, ImportedVisitor) == 0
+    assert Buffer.size(pid, ImportedOperatingSystem) == 0
 
-    assert imported_count(site, "imported_sources") == 1
-    assert imported_count(site, "imported_visitors") == 1
-    assert imported_count(site, "imported_operating_systems") == 2
+    assert imported_count(site, ImportedSource) == 1
+    assert imported_count(site, ImportedVisitor) == 1
+    assert imported_count(site, ImportedOperatingSystem) == 2
   end
 end
