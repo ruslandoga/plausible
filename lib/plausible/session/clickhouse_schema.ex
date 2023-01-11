@@ -11,7 +11,7 @@ defmodule Plausible.ClickhouseSession do
 
     field :start, :naive_datetime
     field :duration, Ch.Types.UInt32
-    field :is_bounce, :boolean
+    field :is_bounce, Ch.Types.Boolean
     field :entry_page, :string
     field :exit_page, :string
     field :pageviews, Ch.Types.Int32
