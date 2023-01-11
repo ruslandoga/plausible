@@ -5,7 +5,7 @@ defmodule Mix.Tasks.CleanClickhouse do
     Mix.Task.run("app.start")
     clean_events = "ALTER TABLE events DELETE WHERE 1"
     clean_sessions = "ALTER TABLE sessions DELETE WHERE 1"
-    Ecto.Adapters.SQL.query!(Plausible.ClickhouseRepo, clean_events)
-    Ecto.Adapters.SQL.query!(Plausible.ClickhouseRepo, clean_sessions)
+    Plausible.ClickhouseRepo.query!(clean_events)
+    Plausible.ClickhouseRepo.query!(clean_sessions)
   end
 end

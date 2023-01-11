@@ -29,7 +29,7 @@ defmodule Plausible.Purge do
   def delete_imported_stats!(site) do
     Enum.each(Plausible.Imported.tables(), fn table ->
       sql = "ALTER TABLE #{table} DELETE WHERE site_id = {site_id:UInt64}"
-      Ecto.Adapters.SQL.query!(Plausible.ClickhouseRepo, sql, %{"site_id" => site.id})
+      Plausible.ClickhouseRepo.query!(sql, %{"site_id" => site.id})
     end)
 
     clear_stats_start_date!(site)
@@ -44,8 +44,8 @@ defmodule Plausible.Purge do
   def delete_native_stats!(site) do
     events_sql = "ALTER TABLE events DELETE WHERE domain = {domain:String}"
     sessions_sql = "ALTER TABLE sessions DELETE WHERE domain = {domain:String}"
-    Ecto.Adapters.SQL.query!(Plausible.ClickhouseRepo, events_sql, %{"domain" => site.domain})
-    Ecto.Adapters.SQL.query!(Plausible.ClickhouseRepo, sessions_sql, %{"domain" => site.domain})
+    Plausible.ClickhouseRepo.query!(events_sql, %{"domain" => site.domain})
+    Plausible.ClickhouseRepo.query!(sessions_sql, %{"domain" => site.domain})
 
     clear_stats_start_date!(site)
 

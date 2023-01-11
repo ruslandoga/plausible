@@ -88,10 +88,10 @@ defmodule Plausible.SiteAdmin do
 
     if to_site do
       event_q = event_transfer_query(from_site.domain, to_site.domain)
-      {:ok, _} = Ecto.Adapters.SQL.query(Plausible.ClickhouseRepo, event_q, [], timeout: 30_000)
+      {:ok, _} = Plausible.ClickhouseRepo.query(event_q, [], timeout: 30_000)
 
       session_q = session_transfer_query(from_site.domain, to_site.domain)
-      {:ok, _} = Ecto.Adapters.SQL.query(Plausible.ClickhouseRepo, session_q, [], timeout: 30_000)
+      {:ok, _} = Plausible.ClickhouseRepo.query(session_q, [], timeout: 30_000)
 
       start_date = Plausible.Stats.Clickhouse.pageview_start_date_local(from_site)
 
