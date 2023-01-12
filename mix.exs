@@ -97,7 +97,7 @@ defmodule Plausible.MixProject do
       {:opentelemetry, "~> 1.1"},
       {:opentelemetry_api, "~> 1.1"},
       {:opentelemetry_ecto, "~> 1.0.0"},
-      {:opentelemetry_exporter, "~> 1.2.0"},
+      {:opentelemetry_exporter, "~> 1.3.0"},
       {:opentelemetry_phoenix, "~> 1.0"},
       {:opentelemetry_oban, "~> 0.2.0-rc.5"},
       {:phoenix, "~> 1.6.0"},
