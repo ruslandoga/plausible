@@ -161,7 +161,7 @@ defmodule Plausible.Stats.Clickhouse do
     ClickhouseRepo.exists?(
       from e in "events",
         select: e.timestamp,
-        where: fragment("? IN tuple(?)", e.domain, ^domains)
+        where: e.domain in ^domains
     )
   end
 
@@ -179,7 +179,7 @@ defmodule Plausible.Stats.Clickhouse do
     ClickhouseRepo.all(
       from e in "events",
         group_by: e.domain,
-        where: fragment("? IN tuple(?)", e.domain, ^domains),
+        where: e.domain in ^domains,
         where: e.timestamp > fragment("now() - INTERVAL 24 HOUR"),
         select: {e.domain, fragment("uniq(user_id)")}
     )

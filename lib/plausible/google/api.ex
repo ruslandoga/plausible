@@ -121,7 +121,7 @@ defmodule Plausible.Google.Api do
 
   Requests to Google Analytics can fail, and are retried at most
   #{@max_attempts} times with an exponential backoff. Returns `:ok` when
-  importing has finished or `{:error, term()}` when a request to GA failed too 
+  importing has finished or `{:error, term()}` when a request to GA failed too
   many times.
 
   Useful links:
@@ -180,7 +180,13 @@ defmodule Plausible.Google.Api do
 
     case HTTP.get_report(report_request) do
       {:ok, {rows, next_page_token}} ->
-        records = Plausible.Imported.from_google_analytics(rows, site.id, report_request.dataset)
+        records =
+          Plausible.Imported.from_google_analytics(
+            rows,
+            site.id,
+            report_request.dataset.__schema__(:source)
+          )
+
         :ok = Plausible.Google.Buffer.insert_many(buffer_pid, report_request.dataset, records)
 
         if next_page_token do

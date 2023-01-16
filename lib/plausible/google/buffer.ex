@@ -16,11 +16,11 @@ defmodule Plausible.Google.Buffer do
     {:ok, %{buffers: %{}}}
   end
 
-  @spec insert_many(pid(), term(), [map()]) :: :ok
+  @spec insert_many(pid(), module(), [map()]) :: :ok
   @doc """
   Puts the given records into the table buffer.
   """
-  def insert_many(pid, schema, records) do
+  def insert_many(pid, schema, records) when is_atom(schema) do
     GenServer.call(pid, {:insert_many, schema, records})
   end
 

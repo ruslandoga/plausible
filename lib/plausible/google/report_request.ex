@@ -10,8 +10,31 @@ defmodule Plausible.Google.ReportRequest do
     :page_size
   ]
 
+  alias Plausible.Google.{
+    ImportedVisitor,
+    ImportedSource,
+    ImportedPage,
+    ImportedEntryPage,
+    ImportedExitPage,
+    ImportedLocation,
+    ImportedDevice,
+    ImportedBrowser,
+    ImportedOperatingSystem
+  }
+
+  @type dataset ::
+          ImportedVisitor
+          | ImportedSource
+          | ImportedPage
+          | ImportedEntryPage
+          | ImportedExitPage
+          | ImportedLocation
+          | ImportedDevice
+          | ImportedBrowser
+          | ImportedOperatingSystem
+
   @type t() :: %__MODULE__{
-          dataset: String.t(),
+          dataset: dataset,
           dimensions: [String.t()],
           metrics: [String.t()],
           date_range: Date.Range.t(),
@@ -24,12 +47,12 @@ defmodule Plausible.Google.ReportRequest do
   def full_report do
     [
       %__MODULE__{
-        dataset: "imported_visitors",
+        dataset: ImportedVisitor,
         dimensions: ["ga:date"],
         metrics: ["ga:users", "ga:pageviews", "ga:bounces", "ga:sessions", "ga:sessionDuration"]
       },
       %__MODULE__{
-        dataset: "imported_sources",
+        dataset: ImportedSource,
         dimensions: [
           "ga:date",
           "ga:source",
@@ -41,37 +64,37 @@ defmodule Plausible.Google.ReportRequest do
         metrics: ["ga:users", "ga:sessions", "ga:bounces", "ga:sessionDuration"]
       },
       %__MODULE__{
-        dataset: "imported_pages",
+        dataset: ImportedPage,
         dimensions: ["ga:date", "ga:hostname", "ga:pagePath"],
         metrics: ["ga:users", "ga:pageviews", "ga:exits", "ga:timeOnPage"]
       },
       %__MODULE__{
-        dataset: "imported_entry_pages",
+        dataset: ImportedEntryPage,
         dimensions: ["ga:date", "ga:landingPagePath"],
         metrics: ["ga:users", "ga:entrances", "ga:sessionDuration", "ga:bounces"]
       },
       %__MODULE__{
-        dataset: "imported_exit_pages",
+        dataset: ImportedExitPage,
         dimensions: ["ga:date", "ga:exitPagePath"],
         metrics: ["ga:users", "ga:exits"]
       },
       %__MODULE__{
-        dataset: "imported_locations",
+        dataset: ImportedLocation,
         dimensions: ["ga:date", "ga:countryIsoCode", "ga:regionIsoCode"],
         metrics: ["ga:users", "ga:sessions", "ga:bounces", "ga:sessionDuration"]
       },
       %__MODULE__{
-        dataset: "imported_devices",
+        dataset: ImportedDevice,
         dimensions: ["ga:date", "ga:deviceCategory"],
         metrics: ["ga:users", "ga:sessions", "ga:bounces", "ga:sessionDuration"]
       },
       %__MODULE__{
-        dataset: "imported_browsers",
+        dataset: ImportedbBrowser,
         dimensions: ["ga:date", "ga:browser"],
         metrics: ["ga:users", "ga:sessions", "ga:bounces", "ga:sessionDuration"]
       },
       %__MODULE__{
-        dataset: "imported_operating_systems",
+        dataset: ImportedOperatingSystem,
         dimensions: ["ga:date", "ga:operatingSystem"],
         metrics: ["ga:users", "ga:sessions", "ga:bounces", "ga:sessionDuration"]
       }

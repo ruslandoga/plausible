@@ -740,7 +740,7 @@ defmodule Plausible.ImportedTest do
           }
         ],
         site.id,
-        "imported_pages"
+        ImportedPage
       )
 
       import_data(

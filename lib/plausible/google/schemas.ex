@@ -112,7 +112,7 @@ defmodule Plausible.Google.ImportedBrowser do
   use Ecto.Schema
 
   @primary_key false
-  schema "imported_devices" do
+  schema "imported_browsers" do
     field :site_id, Ch.Types.UInt64
     field :date, :date
     field :browser, :string

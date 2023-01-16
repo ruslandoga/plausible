@@ -162,8 +162,10 @@ defmodule Plausible.TestUtils do
   end
 
   defp populate_imported_stats(events) do
-    Enum.group_by(events, &Map.fetch!(&1, :table), &Map.delete(&1, :table))
-    |> Enum.map(fn {table, events} -> Plausible.ClickhouseRepo.insert_all(table, events) end)
+    Enum.group_by(events, &Map.fetch!(&1, :__struct__), fn event ->
+      event |> Map.from_struct() |> Map.delete(:__meta__)
+    end)
+    |> Enum.map(fn {schema, events} -> Plausible.ClickhouseRepo.insert_all(schema, events) end)
   end
 
   def relative_time(shifts) do

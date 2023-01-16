@@ -66,7 +66,7 @@ defmodule Plausible.Google.ApiTest do
 
     test "will fetch and persist import data from Google Analytics", %{site: site, buffer: buffer} do
       request = %Plausible.Google.ReportRequest{
-        dataset: "imported_exit_pages",
+        dataset: Plausible.Google.ImportedExitPage,
         view_id: "123",
         date_range: Date.range(~D[2022-01-01], ~D[2022-02-01]),
         dimensions: ["ga:date", "ga:exitPagePath"],
@@ -170,7 +170,7 @@ defmodule Plausible.Google.ApiTest do
       )
 
       request = %Plausible.Google.ReportRequest{
-        dataset: "imported_exit_pages",
+        dataset: Plausible.Google.ImportedExitPage,
         view_id: "123",
         date_range: Date.range(~D[2022-01-01], ~D[2022-02-01]),
         dimensions: ["ga:date", "ga:exitPagePath"],
