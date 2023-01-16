@@ -43,14 +43,14 @@ defmodule Plausible.Stats.Breakdown do
           offset: ^offset,
           where:
             fragment(
-              "notEmpty(multiMatchAllIndices(?, array(?)) as indices)",
+              "notEmpty(multiMatchAllIndices(?, ?) as indices)",
               e.pathname,
               ^page_regexes
             ),
           group_by: fragment("index"),
           select: %{
             index: fragment("arrayJoin(indices) as index"),
-            goal: fragment("concat('Visit ', array(?)[index])", ^page_exprs)
+            goal: fragment("concat('Visit ', ?[index])", ^page_exprs)
           }
         )
         |> select_event_metrics(metrics)
@@ -384,7 +384,7 @@ defmodule Plausible.Stats.Breakdown do
           group_by: fragment("index"),
           select_merge: %{
             index: fragment("arrayJoin(indices) as index"),
-            page_match: fragment("array(?)[index]", ^match_exprs)
+            page_match: fragment("?[index]", ^match_exprs)
           },
           order_by: {:asc, fragment("index")}
         )

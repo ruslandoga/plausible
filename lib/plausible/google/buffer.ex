@@ -91,6 +91,13 @@ defmodule Plausible.Google.Buffer do
     Process.sleep(1000)
 
     Logger.info("Import: Flushing #{length(records)} from #{schema} buffer")
+
+    records =
+      Enum.map(records, fn
+        %_{} = struct -> struct |> Map.from_struct() |> Map.delete(:__meta__)
+        record -> record
+      end)
+
     Plausible.ClickhouseRepo.insert_all(schema, records)
   end
 end
