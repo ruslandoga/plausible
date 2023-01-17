@@ -7,7 +7,7 @@ defmodule Plausible.Stats.Timeseries do
   @event_metrics [:visitors, :pageviews]
   @session_metrics [:visits, :bounce_rate, :visit_duration]
   def timeseries(site, query, metrics) do
-    steps = buckets(query)
+    {steps, eq, format} = buckets(query)
 
     event_metrics = Enum.filter(metrics, &(&1 in @event_metrics))
     session_metrics = Enum.filter(metrics, &(&1 in @session_metrics))
@@ -18,11 +18,18 @@ defmodule Plausible.Stats.Timeseries do
         fn -> sessions_timeseries(site, query, session_metrics) end
       ])
 
-    Enum.map(steps, fn step ->
-      empty_row(step, metrics)
-      |> Map.merge(Enum.find(event_result, fn row -> row[:date] == step end) || %{})
-      |> Map.merge(Enum.find(session_result, fn row -> row[:date] == step end) || %{})
-    end)
+    data =
+      Enum.map(steps, fn step ->
+        empty_row(step, metrics)
+        |> Map.merge(Enum.find(event_result, fn row -> eq.(row[:date], step) end) || %{})
+        |> Map.merge(Enum.find(session_result, fn row -> eq.(row[:date], step) end) || %{})
+      end)
+
+    if format do
+      Enum.map(data, fn %{date: date} = data -> %{data | date: format.(date)} end)
+    else
+      data
+    end
   end
 
   defp events_timeseries(_, _, []), do: []
@@ -47,28 +54,36 @@ defmodule Plausible.Stats.Timeseries do
     |> ClickhouseRepo.all()
   end
 
+  @spec buckets(%Query{}) :: {Enumerable.t(), (any, any -> boolean), (any -> String.t()) | nil}
   defp buckets(%Query{interval: "month"} = query) do
     n_buckets = Timex.diff(query.date_range.last, query.date_range.first, :months)
 
-    Enum.map(n_buckets..0, fn shift ->
-      query.date_range.last
-      |> Timex.beginning_of_month()
-      |> Timex.shift(months: -shift)
-    end)
+    buckets =
+      Enum.map(n_buckets..0, fn shift ->
+        query.date_range.last
+        |> Timex.beginning_of_month()
+        |> Timex.shift(months: -shift)
+      end)
+
+    {buckets, _eq = fn left, right -> Date.compare(left, right) == :eq end, _format = nil}
   end
 
   defp buckets(%Query{interval: "week"} = query) do
     n_buckets = Timex.diff(query.date_range.last, query.date_range.first, :weeks)
 
-    Enum.map(0..n_buckets, fn shift ->
-      query.date_range.first
-      |> Timex.shift(weeks: shift)
-      |> date_or_weekstart(query)
-    end)
+    buckets =
+      Enum.map(0..n_buckets, fn shift ->
+        query.date_range.first
+        |> Timex.shift(weeks: shift)
+        |> date_or_weekstart(query)
+      end)
+
+    {buckets, _eq = fn left, right -> Date.compare(left, right) == :eq end, _format = nil}
   end
 
   defp buckets(%Query{interval: "date"} = query) do
-    Enum.into(query.date_range, [])
+    buckets = Enum.into(query.date_range, [])
+    {buckets, _eq = fn left, right -> Date.compare(left, right) == :eq end, _format = nil}
   end
 
   @full_day_in_hours 23
@@ -80,16 +95,23 @@ defmodule Plausible.Stats.Timeseries do
         Timex.diff(query.date_range.last, query.date_range.first, :hours)
       end
 
-    Enum.map(0..n_buckets, fn step ->
-      query.date_range.first
-      |> Timex.to_datetime()
-      |> Timex.shift(hours: step)
-      |> Timex.format!("{YYYY}-{0M}-{0D} {h24}:{m}:{s}")
-    end)
+    buckets =
+      Enum.map(0..n_buckets, fn step ->
+        query.date_range.first
+        |> Timex.to_datetime()
+        |> Timex.shift(hours: step)
+      end)
+
+    {
+      buckets,
+      _eq = fn left, right -> NaiveDateTime.compare(left, right) == :eq end,
+      _format = fn date -> Timex.format!(date, "{YYYY}-{0M}-{0D} {h24}:{m}:{s}") end
+    }
   end
 
   defp buckets(%Query{period: "30m", interval: "minute"}) do
-    Enum.into(-30..-1, [])
+    buckets = Enum.into(-30..-1, [])
+    {buckets, _eq = fn left, right -> left == right end, _format = nil}
   end
 
   @full_day_in_minutes 1439
@@ -101,12 +123,18 @@ defmodule Plausible.Stats.Timeseries do
         Timex.diff(query.date_range.last, query.date_range.first, :minutes)
       end
 
-    Enum.map(0..n_buckets, fn step ->
-      query.date_range.first
-      |> Timex.to_datetime()
-      |> Timex.shift(minutes: step)
-      |> Timex.format!("{YYYY}-{0M}-{0D} {h24}:{m}:{s}")
-    end)
+    buckets =
+      Enum.map(0..n_buckets, fn step ->
+        query.date_range.first
+        |> Timex.to_datetime()
+        |> Timex.shift(minutes: step)
+      end)
+
+    {
+      buckets,
+      _eq = fn left, right -> NaiveDateTime.compare(left, right) == :eq end,
+      _format = fn date -> Timex.format!(date, "{YYYY}-{0M}-{0D} {h24}:{m}:{s}") end
+    }
   end
 
   defp select_bucket(q, site, %Query{interval: "month"}) do
