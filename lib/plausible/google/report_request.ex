@@ -89,7 +89,7 @@ defmodule Plausible.Google.ReportRequest do
         metrics: ["ga:users", "ga:sessions", "ga:bounces", "ga:sessionDuration"]
       },
       %__MODULE__{
-        dataset: ImportedbBrowser,
+        dataset: ImportedBrowser,
         dimensions: ["ga:date", "ga:browser"],
         metrics: ["ga:users", "ga:sessions", "ga:bounces", "ga:sessionDuration"]
       },
