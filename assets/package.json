@@ -48,7 +48,7 @@
     "react-router-dom": "^5.2.0",
     "react-transition-group": "^4.4.2",
     "tailwindcss": "^2.1.2",
-    "terser-webpack-plugin": "^5.1.2",
+    "terser-webpack-plugin": "^5.3.6",
     "url-search-params-polyfill": "^8.1.1",
     "webpack": "5.38.1",
     "webpack-cli": "^4.7.0"
