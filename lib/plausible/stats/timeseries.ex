@@ -54,7 +54,6 @@ defmodule Plausible.Stats.Timeseries do
     |> ClickhouseRepo.all()
   end
 
-  @spec buckets(%Query{}) :: {Enumerable.t(), (any, any -> boolean), (any -> String.t()) | nil}
   defp buckets(%Query{interval: "month"} = query) do
     n_buckets = Timex.diff(query.date_range.last, query.date_range.first, :months)
 

@@ -1,4 +1,5 @@
 defmodule Plausible.Google.ImportedVisitor do
+  @moduledoc false
   use Ecto.Schema
 
   @primary_key false
@@ -14,6 +15,7 @@ defmodule Plausible.Google.ImportedVisitor do
 end
 
 defmodule Plausible.Google.ImportedSource do
+  @moduledoc false
   use Ecto.Schema
 
   @primary_key false
@@ -33,6 +35,7 @@ defmodule Plausible.Google.ImportedSource do
 end
 
 defmodule Plausible.Google.ImportedPage do
+  @moduledoc false
   use Ecto.Schema
 
   @primary_key false
@@ -49,6 +52,7 @@ defmodule Plausible.Google.ImportedPage do
 end
 
 defmodule Plausible.Google.ImportedEntryPage do
+  @moduledoc false
   use Ecto.Schema
 
   @primary_key false
@@ -64,6 +68,7 @@ defmodule Plausible.Google.ImportedEntryPage do
 end
 
 defmodule Plausible.Google.ImportedExitPage do
+  @moduledoc false
   use Ecto.Schema
 
   @primary_key false
@@ -77,6 +82,7 @@ defmodule Plausible.Google.ImportedExitPage do
 end
 
 defmodule Plausible.Google.ImportedLocation do
+  @moduledoc false
   use Ecto.Schema
 
   @primary_key false
@@ -94,6 +100,7 @@ defmodule Plausible.Google.ImportedLocation do
 end
 
 defmodule Plausible.Google.ImportedDevice do
+  @moduledoc false
   use Ecto.Schema
 
   @primary_key false
@@ -109,6 +116,7 @@ defmodule Plausible.Google.ImportedDevice do
 end
 
 defmodule Plausible.Google.ImportedBrowser do
+  @moduledoc false
   use Ecto.Schema
 
   @primary_key false
@@ -124,6 +132,7 @@ defmodule Plausible.Google.ImportedBrowser do
 end
 
 defmodule Plausible.Google.ImportedOperatingSystem do
+  @moduledoc false
   use Ecto.Schema
 
   @primary_key false
