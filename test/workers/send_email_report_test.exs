@@ -27,32 +27,26 @@ defmodule Plausible.Workers.SendEmailReportTest do
       site = insert(:site, timezone: "US/Eastern")
       insert(:weekly_report, site: site, recipients: ["user@email.com"])
 
-      now = Timex.now(site.timezone) |> DateTime.truncate(:second) |> DateTime.to_naive()
-
+      now = Timex.now(site.timezone)
       last_monday = Timex.shift(now, weeks: -1) |> Timex.beginning_of_week()
       last_sunday = Timex.shift(now, weeks: -1) |> Timex.end_of_week()
       sunday_before_last = Timex.shift(last_monday, minutes: -1)
       this_monday = Timex.beginning_of_week(now)
 
-      create_pageviews(
-        [
-          # Sunday before last, not counted
-          %{domain: site.domain, timestamp: Timezone.convert(sunday_before_last, "UTC")},
-          # Sunday before last, not counted
-          %{domain: site.domain, timestamp: Timezone.convert(sunday_before_last, "UTC")},
-          # Last monday, counted
-          %{domain: site.domain, timestamp: Timezone.convert(last_monday, "UTC")},
-          # Last sunday, counted
-          %{domain: site.domain, timestamp: Timezone.convert(last_sunday, "UTC")},
-          # This monday, not counted
-          %{domain: site.domain, timestamp: Timezone.convert(this_monday, "UTC")},
-          # This monday, not counted
-          %{domain: site.domain, timestamp: Timezone.convert(this_monday, "UTC")}
-        ]
-        |> Enum.map(fn %{timestamp: timestamp} = event ->
-          %{event | timestamp: timestamp |> DateTime.truncate(:second) |> DateTime.to_naive()}
-        end)
-      )
+      create_pageviews([
+        # Sunday before last, not counted
+        %{domain: site.domain, timestamp: Timezone.convert(sunday_before_last, "UTC")},
+        # Sunday before last, not counted
+        %{domain: site.domain, timestamp: Timezone.convert(sunday_before_last, "UTC")},
+        # Last monday, counted
+        %{domain: site.domain, timestamp: Timezone.convert(last_monday, "UTC")},
+        # Last sunday, counted
+        %{domain: site.domain, timestamp: Timezone.convert(last_sunday, "UTC")},
+        # This monday, not counted
+        %{domain: site.domain, timestamp: Timezone.convert(this_monday, "UTC")},
+        # This monday, not counted
+        %{domain: site.domain, timestamp: Timezone.convert(this_monday, "UTC")}
+      ])
 
       perform_job(SendEmailReport, %{"site_id" => site.id, "interval" => "weekly"})
 

@@ -55,7 +55,7 @@ defmodule PlausibleWeb.Api.ExternalController do
       end
 
     clickhouse_health =
-      case Plausible.ClickhouseRepo.query("SELECT 1", []) do
+      case Ecto.Adapters.SQL.query(Plausible.ClickhouseRepo, "SELECT 1", []) do
         {:ok, _} -> "ok"
         e -> "error: #{inspect(e)}"
       end

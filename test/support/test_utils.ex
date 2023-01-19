@@ -68,7 +68,10 @@ defmodule Plausible.TestUtils do
   def create_pageviews(pageviews) do
     pageviews =
       Enum.map(pageviews, fn pageview ->
-        Factory.build(:pageview, pageview) |> Map.from_struct() |> Map.delete(:__meta__)
+        Factory.build(:pageview, pageview)
+        |> Map.from_struct()
+        |> Map.delete(:__meta__)
+        |> update_in([:timestamp], &to_naive_truncate/1)
       end)
 
     Plausible.ClickhouseRepo.insert_all(Plausible.ClickhouseEvent, pageviews)
@@ -77,7 +80,10 @@ defmodule Plausible.TestUtils do
   def create_events(events) do
     events =
       Enum.map(events, fn event ->
-        Factory.build(:event, event) |> Map.from_struct() |> Map.delete(:__meta__)
+        Factory.build(:event, event)
+        |> Map.from_struct()
+        |> Map.delete(:__meta__)
+        |> update_in([:timestamp], &to_naive_truncate/1)
       end)
 
     Plausible.ClickhouseRepo.insert_all(Plausible.ClickhouseEvent, events)
@@ -86,7 +92,11 @@ defmodule Plausible.TestUtils do
   def create_sessions(sessions) do
     sessions =
       Enum.map(sessions, fn session ->
-        Factory.build(:ch_session, session) |> Map.from_struct() |> Map.delete(:__meta__)
+        Factory.build(:ch_session, session)
+        |> Map.from_struct()
+        |> Map.delete(:__meta__)
+        |> update_in([:timestamp], &to_naive_truncate/1)
+        |> update_in([:start], &to_naive_truncate/1)
       end)
 
     Plausible.ClickhouseRepo.insert_all(Plausible.ClickhouseSession, sessions)
@@ -131,7 +141,17 @@ defmodule Plausible.TestUtils do
 
   def populate_stats(events) do
     {native, imported} =
-      Enum.split_with(events, fn event ->
+      events
+      |> Enum.map(fn event ->
+        case event do
+          %{timestamp: timestamp} ->
+            %{event | timestamp: to_naive_truncate(timestamp)}
+
+          _other ->
+            event
+        end
+      end)
+      |> Enum.split_with(fn event ->
         case event do
           %Plausible.ClickhouseEvent{} ->
             true
@@ -162,16 +182,22 @@ defmodule Plausible.TestUtils do
   end
 
   defp populate_imported_stats(events) do
-    Enum.group_by(events, &Map.fetch!(&1, :__struct__), fn event ->
-      event |> Map.from_struct() |> Map.delete(:__meta__)
-    end)
-    |> Enum.map(fn {schema, events} -> Plausible.ClickhouseRepo.insert_all(schema, events) end)
+    Enum.group_by(events, &Map.fetch!(&1, :table), &Map.delete(&1, :table))
+    |> Enum.map(fn {table, events} -> Plausible.Google.Buffer.insert_all(table, events) end)
   end
 
   def relative_time(shifts) do
     NaiveDateTime.utc_now()
     |> Timex.shift(shifts)
     |> NaiveDateTime.truncate(:second)
+  end
+
+  def to_naive_truncate(%DateTime{} = dt) do
+    to_naive_truncate(DateTime.to_naive(dt))
+  end
+
+  def to_naive_truncate(%NaiveDateTime{} = naive) do
+    NaiveDateTime.truncate(naive, :second)
   end
 
   def eventually(expectation, wait_time_ms \\ 50, retries \\ 10) do

@@ -16,20 +16,20 @@ defmodule Plausible.Google.Buffer do
     {:ok, %{buffers: %{}}}
   end
 
-  @spec insert_many(pid(), module(), [map()]) :: :ok
+  @spec insert_many(pid(), term(), [map()]) :: :ok
   @doc """
   Puts the given records into the table buffer.
   """
-  def insert_many(pid, schema, records) when is_atom(schema) do
-    GenServer.call(pid, {:insert_many, schema, records})
+  def insert_many(pid, table_name, records) do
+    GenServer.call(pid, {:insert_many, table_name, records})
   end
 
   @spec size(pid(), term()) :: non_neg_integer()
   @doc """
   Returns the total count of items in the given table buffer.
   """
-  def size(pid, schema) do
-    GenServer.call(pid, {:get_size, schema})
+  def size(pid, table_name) do
+    GenServer.call(pid, {:get_size, table_name})
   end
 
   @spec flush(pid()) :: :ok
@@ -44,39 +44,39 @@ defmodule Plausible.Google.Buffer do
     GenServer.stop(pid)
   end
 
-  def handle_call({:get_size, schema}, _from, %{buffers: buffers} = state) do
+  def handle_call({:get_size, table_name}, _from, %{buffers: buffers} = state) do
     size =
       buffers
-      |> Map.get(schema, [])
+      |> Map.get(table_name, [])
       |> length()
 
     {:reply, size, state}
   end
 
-  def handle_call({:insert_many, schema, records}, _from, %{buffers: buffers} = state) do
-    Logger.info("Import: Adding #{length(records)} to #{schema} buffer")
+  def handle_call({:insert_many, table_name, records}, _from, %{buffers: buffers} = state) do
+    Logger.info("Import: Adding #{length(records)} to #{table_name} buffer")
 
-    new_buffer = Map.get(buffers, schema, []) ++ records
-    new_state = put_in(state.buffers[schema], new_buffer)
+    new_buffer = Map.get(buffers, table_name, []) ++ records
+    new_state = put_in(state.buffers[table_name], new_buffer)
 
     if length(new_buffer) >= max_buffer_size() do
-      {:reply, :ok, new_state, {:continue, {:flush, schema}}}
+      {:reply, :ok, new_state, {:continue, {:flush, table_name}}}
     else
       {:reply, :ok, new_state}
     end
   end
 
   def handle_call(:flush_all_buffers, _from, state) do
-    Enum.each(state.buffers, fn {schema, records} ->
-      flush_buffer(records, schema)
+    Enum.each(state.buffers, fn {table_name, records} ->
+      flush_buffer(records, table_name)
     end)
 
     {:reply, :ok, put_in(state.buffers, %{})}
   end
 
-  def handle_continue({:flush, schema}, state) do
-    flush_buffer(state.buffers[schema], schema)
-    {:noreply, put_in(state.buffers[schema], [])}
+  def handle_continue({:flush, table_name}, state) do
+    flush_buffer(state.buffers[table_name], table_name)
+    {:noreply, put_in(state.buffers[table_name], [])}
   end
 
   defp max_buffer_size do
@@ -85,19 +85,29 @@ defmodule Plausible.Google.Buffer do
     |> Keyword.fetch!(:max_buffer_size)
   end
 
-  defp flush_buffer(records, schema) do
+  defp flush_buffer(records, table_name) do
     # Clickhouse does not recommend sending more than 1 INSERT operation per second, and this
     # sleep call slows down the flushing
     Process.sleep(1000)
 
-    Logger.info("Import: Flushing #{length(records)} from #{schema} buffer")
+    Logger.info("Import: Flushing #{length(records)} from #{table_name} buffer")
+    insert_all(table_name, records)
+  end
 
-    records =
-      Enum.map(records, fn
-        %_{} = struct -> struct |> Map.from_struct() |> Map.delete(:__meta__)
-        record -> record
-      end)
-
+  # used in tests `setup`
+  @doc false
+  def insert_all(table_name, records) do
+    schema = table_schema(table_name)
     Plausible.ClickhouseRepo.insert_all(schema, records)
   end
+
+  defp table_schema("imported_visitors"), do: Plausible.Google.ImportedVisitor
+  defp table_schema("imported_sources"), do: Plausible.Google.ImportedSource
+  defp table_schema("imported_pages"), do: Plausible.Google.ImportedPage
+  defp table_schema("imported_entry_pages"), do: Plausible.Google.ImportedEntryPage
+  defp table_schema("imported_exit_pages"), do: Plausible.Google.ImportedExitPage
+  defp table_schema("imported_locations"), do: Plausible.Google.ImportedLocation
+  defp table_schema("imported_devices"), do: Plausible.Google.ImportedDevice
+  defp table_schema("imported_browsers"), do: Plausible.Google.ImportedBrowser
+  defp table_schema("imported_operating_systems"), do: Plausible.Google.ImportedOperatingSystem
 end

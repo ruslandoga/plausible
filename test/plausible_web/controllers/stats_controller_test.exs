@@ -191,7 +191,7 @@ defmodule PlausibleWeb.StatsControllerTest do
         subdivision1_code: "EE-37",
         city_geoname_id: 588_409,
         pathname: "/",
-        timestamp: to_naive(Timex.shift(~N[2021-10-20 12:00:00], minutes: -1)),
+        timestamp: Timex.shift(~N[2021-10-20 12:00:00], minutes: -1),
         referrer_source: "Google",
         user_id: 123
       ),
@@ -200,7 +200,7 @@ defmodule PlausibleWeb.StatsControllerTest do
         subdivision1_code: "EE-37",
         city_geoname_id: 588_409,
         pathname: "/some-other-page",
-        timestamp: to_naive(Timex.shift(~N[2021-10-20 12:00:00], minutes: -2)),
+        timestamp: Timex.shift(~N[2021-10-20 12:00:00], minutes: -2),
         referrer_source: "Google",
         user_id: 123
       ),
@@ -211,7 +211,7 @@ defmodule PlausibleWeb.StatsControllerTest do
         utm_source: "google",
         utm_content: "content",
         utm_term: "term",
-        timestamp: to_naive(Timex.shift(~N[2021-10-20 12:00:00], days: -1)),
+        timestamp: Timex.shift(~N[2021-10-20 12:00:00], days: -1),
         browser: "ABrowserName"
       ),
       build(:pageview,
@@ -220,14 +220,14 @@ defmodule PlausibleWeb.StatsControllerTest do
         browser: "ABrowserName"
       ),
       build(:pageview,
-        timestamp: to_naive(Timex.shift(~N[2021-10-20 12:00:00], months: -5)),
+        timestamp: Timex.shift(~N[2021-10-20 12:00:00], months: -5),
         utm_campaign: "ads",
         country_code: "EE",
         referrer_source: "Google",
         browser: "ABrowserName"
       ),
       build(:event,
-        timestamp: to_naive(Timex.shift(~N[2021-10-20 12:00:00], days: -1)),
+        timestamp: Timex.shift(~N[2021-10-20 12:00:00], days: -1),
         name: "Signup",
         "meta.key": ["variant"],
         "meta.value": ["A"]
@@ -367,13 +367,5 @@ defmodule PlausibleWeb.StatsControllerTest do
       conn = get(conn, "/share/#{site2.domain}?auth=#{link2.slug}")
       assert html_response(conn, 200) =~ "Enter password"
     end
-  end
-
-  defp to_naive(%DateTime{} = dt) do
-    dt |> DateTime.to_naive() |> NaiveDateTime.truncate(:second)
-  end
-
-  defp to_naive(%NaiveDateTime{} = naive) do
-    NaiveDateTime.truncate(naive, :second)
   end
 end

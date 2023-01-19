@@ -141,12 +141,12 @@ defmodule Plausible.Test.ClickhouseSetup do
       %{
         name: "pageview",
         domain: "test-site.com",
-        timestamp: Timex.now() |> Timex.shift(minutes: -3) |> to_naive()
+        timestamp: Timex.now() |> Timex.shift(minutes: -3)
       },
       %{
         name: "pageview",
         domain: "test-site.com",
-        timestamp: Timex.now() |> Timex.shift(minutes: -6) |> to_naive()
+        timestamp: Timex.now() |> Timex.shift(minutes: -6)
       },
       %{name: "pageview", domain: "tz-test.com", timestamp: ~N[2019-01-01 00:00:00]},
       %{name: "pageview", domain: "public-site.io"},
@@ -161,7 +161,7 @@ defmodule Plausible.Test.ClickhouseSetup do
         domain: "fetch-tweets-test.com",
         referrer: "t.co/b-link",
         referrer_source: "Twitter",
-        timestamp: Timex.now() |> Timex.shift(days: -5) |> to_naive()
+        timestamp: Timex.now() |> Timex.shift(days: -5)
       },
       %{
         name: "pageview",
@@ -311,8 +311,8 @@ defmodule Plausible.Test.ClickhouseSetup do
         exit_page: "/",
         referrer_source: "Bing",
         referrer: "bing.com",
-        start: Timex.now() |> Timex.shift(minutes: -1) |> to_naive(),
-        timestamp: Timex.now() |> Timex.shift(minutes: -1) |> to_naive()
+        start: Timex.now() |> Timex.shift(minutes: -1),
+        timestamp: Timex.now() |> Timex.shift(minutes: -1)
       },
       %{
         domain: "test-site.com",
@@ -320,8 +320,8 @@ defmodule Plausible.Test.ClickhouseSetup do
         exit_page: "/exit",
         referrer_source: "10words",
         referrer: "10words.com",
-        start: Timex.now() |> Timex.shift(minutes: -2) |> to_naive(),
-        timestamp: Timex.now() |> Timex.shift(minutes: -2) |> to_naive()
+        start: Timex.now() |> Timex.shift(minutes: -2),
+        timestamp: Timex.now() |> Timex.shift(minutes: -2)
       },
       %{
         domain: "test-site.com",
@@ -329,13 +329,9 @@ defmodule Plausible.Test.ClickhouseSetup do
         exit_page: "/exit",
         referrer_source: "10words",
         referrer: "10words.com",
-        start: Timex.now() |> Timex.shift(minutes: -3) |> to_naive(),
-        timestamp: Timex.now() |> Timex.shift(minutes: -3) |> to_naive()
+        start: Timex.now() |> Timex.shift(minutes: -3),
+        timestamp: Timex.now() |> Timex.shift(minutes: -3)
       }
     ])
-  end
-
-  defp to_naive(%DateTime{} = datetime) do
-    datetime |> DateTime.to_naive() |> NaiveDateTime.truncate(:second)
   end
 end

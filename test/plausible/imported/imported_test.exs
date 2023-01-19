@@ -1,28 +1,13 @@
 defmodule Plausible.ImportedTest do
   use PlausibleWeb.ConnCase
-
-  alias Plausible.Google.{
-    ImportedVisitor,
-    ImportedSource,
-    ImportedOperatingSystem,
-    ImportedDevice,
-    ImportedEntryPage,
-    ImportedExitPage,
-    ImportedLocation,
-    ImportedBrowser,
-    ImportedPage
-  }
-
   use Timex
 
   @user_id 123
 
-  defp import_data(ga_data, site_id, schema) do
-    table_name = schema.__schema__(:source)
-
+  defp import_data(ga_data, site_id, table_name) do
     ga_data
     |> Plausible.Imported.from_google_analytics(site_id, table_name)
-    |> then(&Plausible.ClickhouseRepo.insert_all(schema, &1))
+    |> then(&Plausible.Google.Buffer.insert_all(table_name, &1))
   end
 
   describe "Parse and import third party data fetched from Google Analytics" do
@@ -58,7 +43,7 @@ defmodule Plausible.ImportedTest do
           }
         ],
         site.id,
-        ImportedVisitor
+        "imported_visitors"
       )
 
       conn =
@@ -105,7 +90,7 @@ defmodule Plausible.ImportedTest do
           }
         ],
         site.id,
-        ImportedVisitor
+        "imported_visitors"
       )
 
       conn =
@@ -240,7 +225,7 @@ defmodule Plausible.ImportedTest do
           }
         ],
         site.id,
-        ImportedSource
+        "imported_sources"
       )
 
       conn =
@@ -306,7 +291,7 @@ defmodule Plausible.ImportedTest do
           }
         ],
         site.id,
-        ImportedSource
+        "imported_sources"
       )
 
       conn =
@@ -389,7 +374,7 @@ defmodule Plausible.ImportedTest do
           }
         ],
         site.id,
-        ImportedSource
+        "imported_sources"
       )
 
       conn =
@@ -479,7 +464,7 @@ defmodule Plausible.ImportedTest do
           }
         ],
         site.id,
-        ImportedSource
+        "imported_sources"
       )
 
       conn =
@@ -568,7 +553,7 @@ defmodule Plausible.ImportedTest do
           }
         ],
         site.id,
-        ImportedSource
+        "imported_sources"
       )
 
       conn =
@@ -658,7 +643,7 @@ defmodule Plausible.ImportedTest do
           }
         ],
         site.id,
-        ImportedPage
+        "imported_pages"
       )
 
       import_data(
@@ -674,7 +659,7 @@ defmodule Plausible.ImportedTest do
           }
         ],
         site.id,
-        ImportedEntryPage
+        "imported_entry_pages"
       )
 
       conn =
@@ -740,7 +725,7 @@ defmodule Plausible.ImportedTest do
           }
         ],
         site.id,
-        ImportedPage
+        "imported_pages"
       )
 
       import_data(
@@ -751,7 +736,7 @@ defmodule Plausible.ImportedTest do
           }
         ],
         site.id,
-        ImportedExitPage
+        "imported_exit_pages"
       )
 
       conn =
@@ -817,7 +802,7 @@ defmodule Plausible.ImportedTest do
           }
         ],
         site.id,
-        ImportedLocation
+        "imported_locations"
       )
 
       conn =
@@ -875,7 +860,7 @@ defmodule Plausible.ImportedTest do
           }
         ],
         site.id,
-        ImportedDevice
+        "imported_devices"
       )
 
       conn =
@@ -922,7 +907,7 @@ defmodule Plausible.ImportedTest do
           }
         ],
         site.id,
-        ImportedBrowser
+        "imported_browsers"
       )
 
       conn =
@@ -967,7 +952,7 @@ defmodule Plausible.ImportedTest do
           }
         ],
         site.id,
-        ImportedOperatingSystem
+        "imported_operating_systems"
       )
 
       conn =
@@ -1012,7 +997,7 @@ defmodule Plausible.ImportedTest do
           }
         ],
         site.id,
-        ImportedVisitor
+        "imported_visitors"
       )
 
       conn =
@@ -1053,7 +1038,7 @@ defmodule Plausible.ImportedTest do
           }
         ],
         site.id,
-        ImportedVisitor
+        "imported_visitors"
       )
 
       conn =

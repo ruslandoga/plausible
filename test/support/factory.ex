@@ -152,7 +152,8 @@ defmodule Plausible.Factory do
   end
 
   def imported_visitors_factory do
-    %Plausible.Google.ImportedVisitor{
+    %{
+      table: "imported_visitors",
       date: Timex.today(),
       visitors: 1,
       pageviews: 1,
@@ -163,7 +164,8 @@ defmodule Plausible.Factory do
   end
 
   def imported_sources_factory do
-    %Plausible.Google.ImportedSource{
+    %{
+      table: "imported_sources",
       date: Timex.today(),
       source: "",
       visitors: 1,
@@ -174,7 +176,8 @@ defmodule Plausible.Factory do
   end
 
   def imported_pages_factory do
-    %Plausible.Google.ImportedPage{
+    %{
+      table: "imported_pages",
       date: Timex.today(),
       page: "",
       visitors: 1,
@@ -185,7 +188,8 @@ defmodule Plausible.Factory do
   end
 
   def imported_entry_pages_factory do
-    %Plausible.Google.ImportedEntryPage{
+    %{
+      table: "imported_entry_pages",
       date: Timex.today(),
       entry_page: "",
       visitors: 1,
@@ -196,7 +200,8 @@ defmodule Plausible.Factory do
   end
 
   def imported_exit_pages_factory do
-    %Plausible.Google.ImportedExitPage{
+    %{
+      table: "imported_exit_pages",
       date: Timex.today(),
       exit_page: "",
       visitors: 1,
@@ -205,7 +210,8 @@ defmodule Plausible.Factory do
   end
 
   def imported_locations_factory do
-    %Plausible.Google.ImportedLocation{
+    %{
+      table: "imported_locations",
       date: Timex.today(),
       country: "",
       region: "",
@@ -218,7 +224,8 @@ defmodule Plausible.Factory do
   end
 
   def imported_devices_factory do
-    %Plausible.Google.ImportedDevice{
+    %{
+      table: "imported_devices",
       date: Timex.today(),
       device: "",
       visitors: 1,
@@ -229,7 +236,8 @@ defmodule Plausible.Factory do
   end
 
   def imported_browsers_factory do
-    %Plausible.Google.ImportedBrowser{
+    %{
+      table: "imported_browsers",
       date: Timex.today(),
       browser: "",
       visitors: 1,
@@ -240,7 +248,8 @@ defmodule Plausible.Factory do
   end
 
   def imported_operating_systems_factory do
-    %Plausible.Google.ImportedOperatingSystem{
+    %{
+      table: "imported_operating_systems",
       date: Timex.today(),
       operating_system: "",
       visitors: 1,

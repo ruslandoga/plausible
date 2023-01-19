@@ -391,30 +391,21 @@ defmodule Plausible.Stats.Base do
   defp db_prop_val(:utm_term, @no_ref), do: ""
   defp db_prop_val(_, val), do: val
 
-  def utc_boundaries(query, timezone) do
-    {first_datetime, last_datetime} = _utc_boundaries(query, timezone)
-
-    {
-      NaiveDateTime.truncate(first_datetime, :second),
-      NaiveDateTime.truncate(last_datetime, :second)
-    }
-  end
-
-  defp _utc_boundaries(%Query{period: "realtime"}, _timezone) do
+  def utc_boundaries(%Query{period: "realtime"}, _timezone) do
     last_datetime = NaiveDateTime.utc_now() |> Timex.shift(seconds: 5)
     first_datetime = NaiveDateTime.utc_now() |> Timex.shift(minutes: -5)
 
     {first_datetime, last_datetime}
   end
 
-  defp _utc_boundaries(%Query{period: "30m"}, _timezone) do
+  def utc_boundaries(%Query{period: "30m"}, _timezone) do
     last_datetime = NaiveDateTime.utc_now() |> Timex.shift(seconds: 5)
     first_datetime = NaiveDateTime.utc_now() |> Timex.shift(minutes: -30)
 
     {first_datetime, last_datetime}
   end
 
-  defp _utc_boundaries(%Query{date_range: date_range}, timezone) do
+  def utc_boundaries(%Query{date_range: date_range}, timezone) do
     {:ok, first} = NaiveDateTime.new(date_range.first, ~T[00:00:00])
 
     first_datetime =
