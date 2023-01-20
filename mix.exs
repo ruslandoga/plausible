@@ -110,7 +110,7 @@ defmodule Plausible.MixProject do
       {:plug_cowboy, "~> 2.3"},
       {:prom_ex, "~> 1.7.1"},
       {:public_suffix, git: "https://github.com/axelson/publicsuffix-elixir"},
-      {:ref_inspector, "~> 1.3"},
+      {:ref_inspector, "~> 2.0"},
       {:referrer_blocklist, git: "https://github.com/plausible/referrer-blocklist.git"},
       {:sentry, "~> 8.0"},
       {:siphash, "~> 3.2"},
