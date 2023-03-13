@@ -23,9 +23,10 @@ defmodule Plausible.Stats.Timeseries do
       ])
 
     Enum.map(steps, fn step ->
-      empty_row(format.(step), metrics)
+      empty_row(step, metrics)
       |> Map.merge(Enum.find(event_result, fn row -> is_equal.(row[:date], step) end) || %{})
       |> Map.merge(Enum.find(session_result, fn row -> is_equal.(row[:date], step) end) || %{})
+      |> Map.update!(:date, format)
     end)
   end
 
