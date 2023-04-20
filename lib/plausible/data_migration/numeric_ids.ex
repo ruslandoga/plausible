@@ -85,7 +85,6 @@ defmodule Plausible.DataMigration.NumericIDs do
         end
       end
 
-    # TODO default choice: N
     {:ok, _} = run_sql_fn.("drop-events-v2", cluster?: cluster?)
     {:ok, _} = run_sql_fn.("drop-sessions-v2", cluster?: cluster?)
     {:ok, _} = run_sql_fn.("drop-tmp-events-v2", [])
