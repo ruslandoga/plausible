@@ -107,7 +107,7 @@ defmodule Plausible.MixProject do
       {:php_serializer, "~> 2.0"},
       {:plug, "~> 1.13", override: true},
       {:plug_cowboy, "~> 2.3"},
-      {:prom_ex, "~> 1.7.1"},
+      {:prom_ex, "~> 1.8.0"},
       {:public_suffix, git: "https://github.com/axelson/publicsuffix-elixir"},
       {:ref_inspector, "~> 1.3"},
       {:referrer_blocklist, git: "https://github.com/plausible/referrer-blocklist.git"},
