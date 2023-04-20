@@ -39,13 +39,7 @@ defmodule Plausible.Session.CacheStoreTest do
     assert_receive({WriteBuffer, :insert, [sessions]})
     assert [session] = sessions
     assert session.hostname == event.hostname
-
-    if Plausible.v2?() do
-      assert session.site_id == event.site_id
-    else
-      assert session.domain == event.domain
-    end
-
+    assert session.site_id == event.site_id
     assert session.user_id == event.user_id
     assert session.entry_page == event.pathname
     assert session.exit_page == event.pathname

@@ -13,16 +13,12 @@ defmodule Plausible.DataMigration.NumericIDs do
 
     @primary_key false
     schema "domains_lookup" do
-      field :site_id, Ch.Types.UInt64
-      field :domain, :string
+      field(:site_id, Ch.Types.UInt64)
+      field(:domain, :string)
     end
   end
 
   @table_settings "SETTINGS index_granularity = 8192"
-
-  def ready?() do
-    Application.get_env(:plausible, :v2_migration_done) || false
-  end
 
   # credo:disable-for-next-line Credo.Check.Refactor.CyclomaticComplexity
   def run(opts \\ []) do
@@ -62,10 +58,9 @@ defmodule Plausible.DataMigration.NumericIDs do
     start_from = start_from || List.first(partitions)
 
     IO.puts("""
-    Got the following migration settings: 
+    Got the following migration settings:
 
       - max_threads: #{max_threads}
-      - dict_password: ✅
       - table_settings: #{table_settings}
       - db url: #{db_url}
       - cluster?: #{cluster?}
@@ -90,6 +85,7 @@ defmodule Plausible.DataMigration.NumericIDs do
         end
       end
 
+    # TODO default choice: N
     {:ok, _} = run_sql_fn.("drop-events-v2", cluster?: cluster?)
     {:ok, _} = run_sql_fn.("drop-sessions-v2", cluster?: cluster?)
     {:ok, _} = run_sql_fn.("drop-tmp-events-v2", [])

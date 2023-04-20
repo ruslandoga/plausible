@@ -3,18 +3,21 @@ defmodule PlausibleWeb.SiteController do
   use Plausible.Repo
   alias Plausible.{Sites, Goals}
 
-  plug PlausibleWeb.RequireAccountPlug
+  plug(PlausibleWeb.RequireAccountPlug)
 
-  plug PlausibleWeb.AuthorizeSiteAccess,
-       [:owner, :admin, :super_admin] when action not in [:index, :new, :create_site]
+  plug(
+    PlausibleWeb.AuthorizeSiteAccess,
+    [:owner, :admin, :super_admin] when action not in [:index, :new, :create_site]
+  )
 
   def index(conn, params) do
     user = conn.assigns[:current_user]
 
     invitations =
       Repo.all(
-        from i in Plausible.Auth.Invitation,
+        from(i in Plausible.Auth.Invitation,
           where: i.email == ^user.email
+        )
       )
       |> Repo.preload(:site)
 
@@ -109,10 +112,11 @@ defmodule PlausibleWeb.SiteController do
 
     is_first_site =
       !Repo.exists?(
-        from sm in Plausible.Site.Membership,
+        from(sm in Plausible.Site.Membership,
           where:
             sm.user_id == ^user.id and
               sm.site_id != ^site.id
+        )
       )
 
     conn
@@ -212,7 +216,7 @@ defmodule PlausibleWeb.SiteController do
 
   def settings_visibility(conn, _params) do
     site = conn.assigns[:site] |> Repo.preload(:custom_domain)
-    shared_links = Repo.all(from l in Plausible.Site.SharedLink, where: l.site_id == ^site.id)
+    shared_links = Repo.all(from(l in Plausible.Site.SharedLink, where: l.site_id == ^site.id))
 
     conn
     |> assign(:skip_plausible_tracking, true)
@@ -409,7 +413,7 @@ defmodule PlausibleWeb.SiteController do
 
   def disable_weekly_report(conn, _params) do
     site = conn.assigns[:site]
-    Repo.delete_all(from wr in Plausible.Site.WeeklyReport, where: wr.site_id == ^site.id)
+    Repo.delete_all(from(wr in Plausible.Site.WeeklyReport, where: wr.site_id == ^site.id))
 
     conn
     |> put_flash(:success, "You will not receive weekly email reports going forward")
@@ -459,7 +463,7 @@ defmodule PlausibleWeb.SiteController do
 
   def disable_monthly_report(conn, _params) do
     site = conn.assigns[:site]
-    Repo.delete_all(from mr in Plausible.Site.MonthlyReport, where: mr.site_id == ^site.id)
+    Repo.delete_all(from(mr in Plausible.Site.MonthlyReport, where: mr.site_id == ^site.id))
 
     conn
     |> put_flash(:success, "You will not receive monthly email reports going forward")
@@ -519,7 +523,7 @@ defmodule PlausibleWeb.SiteController do
 
   def disable_spike_notification(conn, _params) do
     site = conn.assigns[:site]
-    Repo.delete_all(from mr in Plausible.Site.SpikeNotification, where: mr.site_id == ^site.id)
+    Repo.delete_all(from(mr in Plausible.Site.SpikeNotification, where: mr.site_id == ^site.id))
 
     conn
     |> put_flash(:success, "Spike notification disabled")
@@ -635,9 +639,10 @@ defmodule PlausibleWeb.SiteController do
     site_id = site.id
 
     case Repo.delete_all(
-           from l in Plausible.Site.SharedLink,
+           from(l in Plausible.Site.SharedLink,
              where: l.slug == ^slug,
              where: l.site_id == ^site_id
+           )
          ) do
       {1, _} ->
         conn
@@ -656,9 +661,10 @@ defmodule PlausibleWeb.SiteController do
     site_id = site.id
 
     case Repo.delete_all(
-           from d in Plausible.Site.CustomDomain,
+           from(d in Plausible.Site.CustomDomain,
              where: d.site_id == ^site_id,
              where: d.id == ^domain_id
+           )
          ) do
       {1, _} ->
         conn
@@ -874,36 +880,28 @@ defmodule PlausibleWeb.SiteController do
   end
 
   def change_domain(conn, _params) do
-    if Plausible.v2?() do
-      changeset = Plausible.Site.update_changeset(conn.assigns.site)
+    changeset = Plausible.Site.update_changeset(conn.assigns.site)
 
-      render(conn, "change_domain.html",
-        changeset: changeset,
-        layout: {PlausibleWeb.LayoutView, "focus.html"}
-      )
-    else
-      render_error(conn, 404)
-    end
+    render(conn, "change_domain.html",
+      changeset: changeset,
+      layout: {PlausibleWeb.LayoutView, "focus.html"}
+    )
   end
 
   def change_domain_submit(conn, %{"site" => %{"domain" => new_domain}}) do
-    if Plausible.v2?() do
-      case Plausible.Site.Domain.change(conn.assigns.site, new_domain) do
-        {:ok, updated_site} ->
-          conn
-          |> put_flash(:success, "Website domain changed successfully")
-          |> redirect(
-            to: Routes.site_path(conn, :add_snippet_after_domain_change, updated_site.domain)
-          )
+    case Plausible.Site.Domain.change(conn.assigns.site, new_domain) do
+      {:ok, updated_site} ->
+        conn
+        |> put_flash(:success, "Website domain changed successfully")
+        |> redirect(
+          to: Routes.site_path(conn, :add_snippet_after_domain_change, updated_site.domain)
+        )
 
-        {:error, changeset} ->
-          render(conn, "change_domain.html",
-            changeset: changeset,
-            layout: {PlausibleWeb.LayoutView, "focus.html"}
-          )
-      end
-    else
-      render_error(conn, 404)
+      {:error, changeset} ->
+        render(conn, "change_domain.html",
+          changeset: changeset,
+          layout: {PlausibleWeb.LayoutView, "focus.html"}
+        )
     end
   end
 
