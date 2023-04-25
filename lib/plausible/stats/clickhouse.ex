@@ -454,6 +454,7 @@ defmodule Plausible.Stats.Clickhouse do
         from(
           e in q,
           inner_lateral_join: meta in fragment("meta"),
+          on: true,
           where: meta.key == ^key and meta.value == ^val
         )
       end

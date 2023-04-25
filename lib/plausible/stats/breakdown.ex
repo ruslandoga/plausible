@@ -317,6 +317,7 @@ defmodule Plausible.Stats.Breakdown do
         from(
           e in q,
           inner_lateral_join: meta in fragment("meta"),
+          on: true,
           as: :meta
         )
       end

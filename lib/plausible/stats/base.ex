@@ -145,6 +145,7 @@ defmodule Plausible.Stats.Base do
             from(
               e in q,
               inner_lateral_join: meta in "meta",
+              on: true,
               as: :meta,
               where: meta.key == ^prop_name and meta.value == ^value
             )
@@ -160,6 +161,7 @@ defmodule Plausible.Stats.Base do
             from(
               e in q,
               left_lateral_join: meta in "meta",
+              on: true,
               as: :meta,
               where:
                 (meta.key == ^prop_name and meta.value != ^value) or
@@ -173,6 +175,7 @@ defmodule Plausible.Stats.Base do
           from(
             e in q,
             left_lateral_join: meta in "meta",
+            on: true,
             as: :meta,
             where:
               (meta.key == ^prop_name and meta.value in ^values) or
@@ -186,6 +189,7 @@ defmodule Plausible.Stats.Base do
           from(
             e in q,
             left_lateral_join: meta in "meta",
+            on: true,
             as: :meta,
             where:
               (meta.key == ^prop_name and meta.value not in ^values) or
@@ -302,6 +306,7 @@ defmodule Plausible.Stats.Base do
     from(
       s in sessions_q,
       inner_lateral_join: meta in "entry_meta",
+      on: true,
       as: :meta,
       where: meta.key == ^prop_name and meta.value == ^value
     )
@@ -318,6 +323,7 @@ defmodule Plausible.Stats.Base do
     from(
       s in sessions_q,
       left_lateral_join: meta in "entry_meta",
+      on: true,
       as: :meta,
       where:
         (meta.key == ^prop_name and meta.value != ^value) or
