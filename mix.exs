@@ -54,10 +54,11 @@ defmodule Plausible.MixProject do
   # Type `mix help deps` for examples and options.
   defp deps do
     [
-      {:bamboo, "~> 2.2"},
+      {:bamboo, "~> 2.2", override: true},
       {:bamboo_phoenix, "~> 1.0.0"},
       {:bamboo_postmark, git: "https://github.com/plausible/bamboo_postmark.git", branch: "main"},
       {:bamboo_smtp, "~> 4.1"},
+      {:bamboo_mua, "~> 0.1.0"},
       {:bcrypt_elixir, "~> 3.0"},
       {:bypass, "~> 2.1", only: [:dev, :test]},
       {:cachex, "~> 3.4"},

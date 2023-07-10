@@ -140,6 +140,16 @@ defmodule Plausible.ConfigTest do
              ]
     end
 
+    test "Bamboo.Mua" do
+      env = [
+        {"MAILER_ADAPTER", "Bamboo.Mua"}
+      ]
+
+      assert get_in(runtime_config(env), [:plausible, Plausible.Mailer]) == [
+               {:adapter, Bamboo.Mua}
+             ]
+    end
+
     test "unknown adapter raises" do
       env = {"MAILER_ADAPTER", "Bamboo.FakeAdapter"}
 

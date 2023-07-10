@@ -389,6 +389,9 @@ case mailer_adapter do
       retries: get_var_from_path_or_env(config_dir, "SMTP_RETRIES") || 2,
       no_mx_lookups: get_var_from_path_or_env(config_dir, "SMTP_MX_LOOKUPS_ENABLED") || true
 
+  "Bamboo.Mua" ->
+    config :plausible, Plausible.Mailer, adapter: Bamboo.Mua
+
   "Bamboo.LocalAdapter" ->
     config :plausible, Plausible.Mailer, adapter: Bamboo.LocalAdapter
 
