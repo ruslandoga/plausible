@@ -3,6 +3,8 @@ defmodule Plausible.Export do
 
   import Ecto.Query
 
+  # TODO header
+  # TODO sampling
   # TODO return queries
   # TODO queries can be streamed to compressed CSV (in ClickHouse) (export_stream_csv(query, compressed?))
   # TODO collect to a (streaming) zip archive (export_archive_stream(stream, archive))
@@ -72,7 +74,42 @@ defmodule Plausible.Export do
       })
       |> Plausible.ClickhouseRepo.all()
 
-    # TODO exported_pages
+    exported_pages_subquery =
+      "events_v2"
+      |> where(site_id: ^site_id)
+      |> windows([e],
+        before_and_after: [
+          partition_by: e.session_id,
+          order_by: e.timestamp,
+          frame: fragment("ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING")
+        ]
+      )
+      |> select([e], %{
+        session_id: e.session_id,
+        prev_timestamp: over(fragment("lagInFrame(?)", e.timestamp), :before_and_after),
+        timestamp: e.timestamp,
+        next_timestamp: over(fragment("leadInFrame(?)", e.timestamp), :before_and_after),
+        pathname: e.pathname,
+        hostname: e.hostname,
+        name: e.name,
+        user_id: e.user_id
+      })
+
+    exported_pages =
+      subquery(exported_pages_subquery)
+      |> select([e], %{
+        date: selected_as(fragment("toDate(?)", e.timestamp), :date),
+        path: selected_as(e.pathname, :path),
+        hostname: fragment("any(?)", e.hostname),
+        time_on_page:
+          fragment("sumIf(?, ?)", e.timestamp - e.prev_timestamp, e.prev_timestamp != 0),
+        exits: fragment("countIf(?=0)", e.next_timestamp),
+        pageviews: fragment("countIf(?='pageview')", e.name),
+        visitors: fragment("uniq(?)", e.user_id)
+      })
+      |> group_by([e], [selected_as(:date), selected_as(:path)])
+      |> order_by([], selected_as(:date))
+      |> Plausible.ClickhouseRepo.all()
 
     exported_entry_pages =
       sessions_base_q
@@ -105,20 +142,19 @@ defmodule Plausible.Export do
         s.city_geoname_id
       ])
       |> select_merge([s], %{
-        country_code: s.country_code,
+        country: s.country_code,
         # TODO
         region:
           selected_as(
             fragment("concatWithSeparator('-',?,?)", s.subdivision1_code, s.subdivision2_code),
             :region
           ),
-        city_geoname_id: s.city_geoname_id,
+        city: s.city_geoname_id,
         visitors: fragment("uniq(?)", s.user_id),
         visits: sum(s.sign),
         visit_duration: fragment("toUInt32(round(?))", sum(s.duration * s.sign) / sum(s.sign)),
         bounces: sum(s.is_bounce * s.sign)
       })
-      # TODO postprocess
       |> Plausible.ClickhouseRepo.all()
 
     exported_devices =
@@ -160,8 +196,7 @@ defmodule Plausible.Export do
     %{
       visitors: exported_visitors,
       sources: exported_sources,
-      # TODO
-      pages: [],
+      pages: exported_pages,
       entry_pages: exported_entry_pages,
       exit_pages: exported_exit_pages,
       locations: exported_locations,
