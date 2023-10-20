@@ -78,7 +78,7 @@ defmodule Plausible.Export do
       "events_v2"
       |> where(site_id: ^site_id)
       |> windows([e],
-        before_and_after: [
+        prev_next: [
           partition_by: e.session_id,
           order_by: e.timestamp,
           frame: fragment("ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING")
@@ -86,9 +86,9 @@ defmodule Plausible.Export do
       )
       |> select([e], %{
         session_id: e.session_id,
-        prev_timestamp: over(fragment("lagInFrame(?)", e.timestamp), :before_and_after),
+        prev_timestamp: over(fragment("lagInFrame(?)", e.timestamp), :prev_next),
         timestamp: e.timestamp,
-        next_timestamp: over(fragment("leadInFrame(?)", e.timestamp), :before_and_after),
+        next_timestamp: over(fragment("leadInFrame(?)", e.timestamp), :prev_next),
         pathname: e.pathname,
         hostname: e.hostname,
         name: e.name,
@@ -102,7 +102,7 @@ defmodule Plausible.Export do
         path: selected_as(e.pathname, :path),
         hostname: fragment("any(?)", e.hostname),
         time_on_page:
-          fragment("sumIf(?, ?)", e.timestamp - e.prev_timestamp, e.prev_timestamp != 0),
+          fragment("sumIf(?,?)", e.timestamp - e.prev_timestamp, e.prev_timestamp != 0),
         exits: fragment("countIf(?=0)", e.next_timestamp),
         pageviews: fragment("countIf(?='pageview')", e.name),
         visitors: fragment("uniq(?)", e.user_id)
@@ -165,7 +165,7 @@ defmodule Plausible.Export do
         visitors: fragment("uniq(?)", s.user_id),
         visits: sum(s.sign),
         visit_duration: fragment("toUInt32(round(?))", sum(s.duration * s.sign) / sum(s.sign)),
-        boucnes: sum(s.is_bounce * s.sign)
+        bounces: sum(s.is_bounce * s.sign)
       })
       |> Plausible.ClickhouseRepo.all()
 
@@ -177,7 +177,7 @@ defmodule Plausible.Export do
         visitors: fragment("uniq(?)", s.user_id),
         visits: sum(s.sign),
         visit_duration: fragment("toUInt32(round(?))", sum(s.duration * s.sign) / sum(s.sign)),
-        boucnes: sum(s.is_bounce * s.sign)
+        bounces: sum(s.is_bounce * s.sign)
       })
       |> Plausible.ClickhouseRepo.all()
 
@@ -189,7 +189,7 @@ defmodule Plausible.Export do
         visitors: fragment("uniq(?)", s.user_id),
         visits: sum(s.sign),
         visit_duration: fragment("toUInt32(round(?))", sum(s.duration * s.sign) / sum(s.sign)),
-        boucnes: sum(s.is_bounce * s.sign)
+        bounces: sum(s.is_bounce * s.sign)
       })
       |> Plausible.ClickhouseRepo.all()
 
