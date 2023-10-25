@@ -331,7 +331,29 @@ defmodule Plausible.Stats.Base do
     |> select_event_metrics(rest)
   end
 
-  def select_event_metrics(_, [unknown | _]), do: raise("Unknown metric " <> unknown)
+  def select_event_metrics(q, [:time_on_page | rest]) do
+    q =
+      select_merge(q, [e], %{
+        time_on_page:
+          fragment(
+            "avgIf(?,?) * any(_sample_factor)",
+            e.next_timestamp - e.timestamp,
+            e.next_timestamp != 0
+          ),
+        _time_on_page_nom:
+          fragment(
+            "sumIf(?,?) * any(_sample_factor)",
+            e.next_timestamp - e.timestamp,
+            e.next_timestamp != 0
+          ),
+        _time_on_page_denom:
+          fragment("countIf(?,?) * any(_sample_factor)", e.timestamp, e.next_timestamp != 0)
+      })
+
+    select_event_metrics(q, rest)
+  end
+
+  def select_event_metrics(_, [unknown | _]), do: raise("Unknown metric " <> inspect(unknown))
 
   def select_session_metrics(q, [], _query), do: q
 
@@ -566,7 +588,7 @@ defmodule Plausible.Stats.Base do
     end
   end
 
-  defp split_goals(clauses, map_fn \\ &Function.identity/1) do
+  def split_goals(clauses, map_fn \\ &Function.identity/1) do
     groups =
       Enum.group_by(clauses, fn {goal_type, _v} -> goal_type end, fn {_k, val} -> map_fn.(val) end)
 

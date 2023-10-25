@@ -94,53 +94,11 @@ defmodule Plausible.Stats.Breakdown do
     |> Enum.sort_by(& &1[sorting_key(metrics)], :desc)
   end
 
-  def breakdown(site, query, "event:page" = property, metrics, pagination) do
-    event_metrics = Enum.filter(metrics, &(&1 in @event_metrics))
-    session_metrics = Enum.filter(metrics, &(&1 in @session_metrics))
-
-    event_result = breakdown_events(site, query, "event:page", event_metrics, pagination)
-
-    event_result =
-      if :time_on_page in metrics do
-        pages = Enum.map(event_result, & &1[:page])
-        time_on_page_result = breakdown_time_on_page(site, query, pages)
-
-        Enum.map(event_result, fn row ->
-          Map.put(row, :time_on_page, time_on_page_result[row[:page]])
-        end)
-      else
-        event_result
-      end
-
-    new_query =
-      case event_result do
-        [] ->
-          query
-
-        pages ->
-          Query.put_filter(query, "visit:entry_page", {:member, Enum.map(pages, & &1[:page])})
-      end
-
-    trace(new_query, property, metrics)
-
-    if Enum.any?(event_metrics) && Enum.empty?(event_result) do
-      []
+  def breakdown(site, query, "event:page", metrics, pagination) do
+    if FunWithFlags.enabled?(:single_query_page_breakdown) do
+      new_page_breakdown(site, query, metrics, pagination)
     else
-      {limit, _page} = pagination
-
-      session_result =
-        breakdown_sessions(site, new_query, "visit:entry_page", session_metrics, {limit, 1})
-        |> transform_keys(%{entry_page: :page})
-
-      metrics = metrics ++ [:page]
-
-      zip_results(
-        event_result,
-        session_result,
-        :page,
-        metrics
-      )
-      |> Enum.map(&Map.take(&1, metrics))
+      prev_page_breakdown(site, query, metrics, pagination)
     end
   end
 
@@ -208,6 +166,314 @@ defmodule Plausible.Stats.Breakdown do
     |> apply_pagination(pagination)
     |> ClickhouseRepo.all()
     |> transform_keys(%{operating_system: :os})
+  end
+
+  def new_page_breakdown(site, query, metrics, pagination) do
+    import Ecto.Query
+
+    all_event_metrics = [:time_on_page | @event_metrics]
+    event_metrics = Enum.filter(metrics, &(&1 in all_event_metrics))
+    session_metrics = Enum.filter(metrics, &(&1 in @session_metrics))
+    property = "event:page"
+
+    q =
+      if :time_on_page in metrics do
+        q =
+          site
+          |> base_event_query(Query.remove_event_filters(query, [:props, :page]))
+          |> select([e], %{
+            next_timestamp:
+              over(fragment("leadInFrame(?)", e.timestamp),
+                partition_by: e.session_id,
+                order_by: e.timestamp,
+                frame: fragment("ROWS BETWEEN CURRENT ROW AND 1 FOLLOWING")
+              ),
+            timestamp: e.timestamp,
+            pathname: e.pathname,
+            user_id: e.user_id,
+            _sample_factor: fragment("_sample_factor")
+          })
+
+        q =
+          Enum.reduce(event_metrics, q, fn metric, q ->
+            case metric do
+              :pageviews ->
+                select_merge(q, [e], map(e, [:name]))
+
+              _ when metric in [:visitors, :events, :time_on_page] ->
+                q
+
+              _ when metric in [:average_revenue, :total_revenue] ->
+                select_merge(q, [e], map(e, [:revenue_reporting_amount]))
+            end
+          end)
+
+        q =
+          if query.filters["event:name"] do
+            select_merge(q, [e], map(e, [:name]))
+          else
+            q
+          end
+
+        has_props_filter? = Enum.any?(query.filters, &match?({"event:props:" <> _, _}, &1))
+
+        q =
+          if has_props_filter? do
+            select_merge(q, [e], map(e, [:"meta.key", :"meta.value"]))
+          else
+            q
+          end
+
+        q = subquery(q)
+
+        # copied from Plausible.Stats.Base.query_events/2
+        q = from(e in q, where: ^dynamic_filter_condition(query, "event:page", :pathname))
+
+        q =
+          case query.filters["event:name"] do
+            {:is, name} ->
+              from(e in q, where: e.name == ^name)
+
+            {:member, list} ->
+              from(e in q, where: e.name in ^list)
+
+            nil ->
+              q
+          end
+
+        q =
+          case query.filters["event:goal"] do
+            {:is, {:page, path}} ->
+              from(e in q, where: e.pathname == ^path)
+
+            {:matches, {:page, expr}} ->
+              regex = page_regex(expr)
+              from(e in q, where: fragment("match(?, ?)", e.pathname, ^regex))
+
+            {:is, {:event, event}} ->
+              from(e in q, where: e.name == ^event)
+
+            {:member, clauses} ->
+              {events, pages} = Plausible.Stats.Base.split_goals(clauses)
+              from(e in q, where: e.pathname in ^pages or e.name in ^events)
+
+            {:matches_member, clauses} ->
+              {events, pages} = Plausible.Stats.Base.split_goals(clauses, &page_regex/1)
+
+              event_clause =
+                if Enum.any?(events) do
+                  dynamic([x], fragment("multiMatchAny(?, ?)", x.name, ^events))
+                else
+                  dynamic([x], false)
+                end
+
+              page_clause =
+                if Enum.any?(pages) do
+                  dynamic([x], fragment("multiMatchAny(?, ?)", x.pathname, ^pages))
+                else
+                  dynamic([x], false)
+                end
+
+              where_clause = dynamic([], ^event_clause or ^page_clause)
+
+              from(e in q, where: ^where_clause)
+
+            {:not_matches_member, clauses} ->
+              {events, pages} = Plausible.Stats.Base.split_goals(clauses, &page_regex/1)
+
+              event_clause =
+                if Enum.any?(events) do
+                  dynamic([x], fragment("multiMatchAny(?, ?)", x.name, ^events))
+                else
+                  dynamic([x], false)
+                end
+
+              page_clause =
+                if Enum.any?(pages) do
+                  dynamic([x], fragment("multiMatchAny(?, ?)", x.pathname, ^pages))
+                else
+                  dynamic([x], false)
+                end
+
+              where_clause = dynamic([], not (^event_clause or ^page_clause))
+
+              from(e in q, where: ^where_clause)
+
+            {:not_member, clauses} ->
+              {events, pages} = Plausible.Stats.Base.split_goals(clauses)
+              from(e in q, where: e.pathname not in ^pages and e.name not in ^events)
+
+            nil ->
+              q
+          end
+
+        q =
+          case Query.get_filter_by_prefix(query, "event:props") do
+            {"event:props:" <> prop_name, {:is, value}} ->
+              if value == "(none)" do
+                from(
+                  e in q,
+                  where: fragment("not has(?, ?)", field(e, :"meta.key"), ^prop_name)
+                )
+              else
+                from(
+                  e in q,
+                  array_join: meta in "meta",
+                  as: :meta,
+                  where: meta.key == ^prop_name and meta.value == ^value
+                )
+              end
+
+            {"event:props:" <> prop_name, {:is_not, value}} ->
+              if value == "(none)" do
+                from(
+                  e in q,
+                  where: fragment("has(?, ?)", field(e, :"meta.key"), ^prop_name)
+                )
+              else
+                from(
+                  e in q,
+                  left_array_join: meta in "meta",
+                  as: :meta,
+                  where:
+                    (meta.key == ^prop_name and meta.value != ^value) or
+                      fragment("not has(?, ?)", field(e, :"meta.key"), ^prop_name)
+                )
+              end
+
+            {"event:props:" <> prop_name, {:member, values}} ->
+              none_value_included = Enum.member?(values, "(none)")
+
+              from(
+                e in q,
+                left_array_join: meta in "meta",
+                as: :meta,
+                where:
+                  (meta.key == ^prop_name and meta.value in ^values) or
+                    (^none_value_included and
+                       fragment("not has(?, ?)", field(e, :"meta.key"), ^prop_name))
+              )
+
+            {"event:props:" <> prop_name, {:not_member, values}} ->
+              none_value_included = Enum.member?(values, "(none)")
+
+              from(
+                e in q,
+                left_array_join: meta in "meta",
+                as: :meta,
+                where:
+                  (meta.key == ^prop_name and meta.value not in ^values) or
+                    (^none_value_included and
+                       fragment("has(?, ?)", field(e, :"meta.key"), ^prop_name) and
+                       meta.value not in ^values) or
+                    (not (^none_value_included) and
+                       fragment("not has(?, ?)", field(e, :"meta.key"), ^prop_name))
+              )
+
+            _ ->
+              q
+          end
+
+        q
+      else
+        base_event_query(site, query)
+      end
+
+    # IO.inspect(metrics, label: "metrics")
+
+    event_result =
+      q
+      |> select([e], %{page: e.pathname})
+      # copied from breakdown_events/5
+      |> order_by([e], desc: fragment("uniq(?)", e.user_id))
+      |> order_by([e], asc: e.pathname)
+      |> group_by([e], e.pathname)
+      |> select_event_metrics(event_metrics)
+      |> merge_imported(site, query, property, event_metrics)
+      |> apply_pagination(pagination)
+      # |> IO.inspect(label: "events_breakdown_q")
+      |> Plausible.ClickhouseRepo.all()
+
+    new_query =
+      case event_result do
+        [] ->
+          query
+
+        pages ->
+          Query.put_filter(query, "visit:entry_page", {:member, Enum.map(pages, & &1[:page])})
+      end
+
+    trace(new_query, property, metrics)
+
+    if Enum.any?(event_metrics) && Enum.empty?(event_result) do
+      []
+    else
+      {limit, _page} = pagination
+
+      session_result =
+        breakdown_sessions(site, new_query, "visit:entry_page", session_metrics, {limit, 1})
+        |> transform_keys(%{entry_page: :page})
+
+      metrics = metrics ++ [:page]
+
+      zip_results(
+        event_result,
+        session_result,
+        :page,
+        metrics
+      )
+      |> Enum.map(&Map.take(&1, metrics))
+    end
+  end
+
+  defp prev_page_breakdown(site, query, metrics, pagination) do
+    event_metrics = Enum.filter(metrics, &(&1 in @event_metrics))
+    session_metrics = Enum.filter(metrics, &(&1 in @session_metrics))
+    property = "event:page"
+    event_result = breakdown_events(site, query, "event:page", event_metrics, pagination)
+
+    event_result =
+      if :time_on_page in metrics do
+        pages = Enum.map(event_result, & &1[:page])
+        time_on_page_result = breakdown_time_on_page(site, query, pages)
+
+        Enum.map(event_result, fn row ->
+          Map.put(row, :time_on_page, time_on_page_result[row[:page]])
+        end)
+      else
+        event_result
+      end
+
+    new_query =
+      case event_result do
+        [] ->
+          query
+
+        pages ->
+          Query.put_filter(query, "visit:entry_page", {:member, Enum.map(pages, & &1[:page])})
+      end
+
+    trace(new_query, property, metrics)
+
+    if Enum.any?(event_metrics) && Enum.empty?(event_result) do
+      []
+    else
+      {limit, _page} = pagination
+
+      session_result =
+        breakdown_sessions(site, new_query, "visit:entry_page", session_metrics, {limit, 1})
+        |> transform_keys(%{entry_page: :page})
+
+      metrics = metrics ++ [:page]
+
+      zip_results(
+        event_result,
+        session_result,
+        :page,
+        metrics
+      )
+      |> Enum.map(&Map.take(&1, metrics))
+    end
   end
 
   defp breakdown_time_on_page(_site, _query, []) do
