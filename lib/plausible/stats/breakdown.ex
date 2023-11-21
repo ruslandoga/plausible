@@ -166,76 +166,121 @@ defmodule Plausible.Stats.Breakdown do
     |> select_event_metrics(metrics)
     |> merge_imported(site, query, property, metrics)
     |> apply_pagination(pagination)
+    |> tap(fn q ->
+      {sql, params} = Plausible.ClickhouseRepo.to_sql(:all, q)
+
+      IO.puts("""
+      SQL: #{sql}
+      Params: #{inspect(params)}
+      """)
+    end)
     |> ClickhouseRepo.all()
     |> transform_keys(%{operating_system: :os})
   end
 
-  defp windowed_events_q(site, query, event_metrics) do
-    import Ecto.Query
+  defp events_fields_for_selects(metrics) do
+    Enum.reduce(
+      metrics -- [:visitors, :events, :time_on_page],
+      [],
+      fn metric, fields ->
+        case metric do
+          :pageviews ->
+            [:name | fields]
 
-    windowed_events_q =
-      from e in base_event_query(site, Query.remove_event_filters(query, [:page, :props])),
-        windows: [
-          event_horizon: [
-            partition_by: e.session_id,
-            order_by: e.timestamp,
-            frame: fragment("ROWS BETWEEN CURRENT ROW AND 1 FOLLOWING")
-          ]
-        ],
-        select: %{
-          next_timestamp: over(fragment("leadInFrame(?)", e.timestamp), :event_horizon),
-          next_pathname: over(fragment("leadInFrame(?)", e.pathname), :event_horizon),
-          timestamp: e.timestamp,
-          pathname: e.pathname,
-          session_id: e.session_id,
-          user_id: e.user_id,
-          _sample_factor: fragment("_sample_factor")
-        }
-
-    windowed_events_q =
-      Enum.reduce(
-        event_metrics -- [:visitors, :events, :time_on_page],
-        windowed_events_q,
-        fn metric, windowed_events_q ->
-          case metric do
-            :pageviews ->
-              select_merge(windowed_events_q, [e], map(e, [:name]))
-
-            _ when metric in [:average_revenue, :total_revenue] ->
-              select_merge(windowed_events_q, [e], map(e, [:revenue_reporting_amount]))
-          end
+          _ when metric in [:average_revenue, :total_revenue] ->
+            [:revenue_reporting_amount | fields]
         end
-      )
+      end
+    )
+  end
 
-    windowed_events_q =
+  defp events_fields_for_filter(query) do
+    fields = []
+
+    fields =
       if query.filters["event:name"] do
-        select_merge(windowed_events_q, [e], map(e, [:name]))
+        [:name | fields]
       else
-        windowed_events_q
+        fields
       end
 
     has_props_filter? = Enum.any?(query.filters, &match?({"event:props:" <> _, _}, &1))
 
-    windowed_events_q =
-      if has_props_filter? do
-        select_merge(windowed_events_q, [e], map(e, [:"meta.key", :"meta.value"]))
-      else
-        windowed_events_q
-      end
+    if has_props_filter? do
+      [:"meta.key", :"meta.value" | fields]
+    else
+      fields
+    end
+  end
 
-    windowed_events_q
+  defp windowed_events_q(site, query) do
+    import Ecto.Query
+
+    from e in query_events(site, Query.remove_event_filters(query, [:page, :props])),
+      windows: [
+        event_horizon: [
+          partition_by: e.session_id,
+          order_by: e.timestamp,
+          frame: fragment("ROWS BETWEEN CURRENT ROW AND 1 FOLLOWING")
+        ]
+      ],
+      select: %{
+        next_timestamp: over(fragment("leadInFrame(?)", e.timestamp), :event_horizon),
+        next_pathname: over(fragment("leadInFrame(?)", e.pathname), :event_horizon),
+        timestamp: e.timestamp,
+        pathname: e.pathname,
+        session_id: e.session_id,
+        _sample_factor: fragment("_sample_factor")
+      }
   end
 
   defp single_q_page_breakdown(site, query, "event:page" = property, metrics, pagination) do
+    import Ecto.Query
+
     event_metrics = Enum.filter(metrics, &(&1 in [:time_on_page | @event_metrics]))
     session_metrics = Enum.filter(metrics, &(&1 in @session_metrics))
 
     event_result =
       if :time_on_page in metrics do
-        windowed_events_q(site, query, event_metrics)
-        # TODO need? can just define window and use over(..) in agg funcs?
-        |> Ecto.Query.subquery()
-        |> breakdown_events(site, query, "event:page", event_metrics, pagination)
+        fields_for_selects = [:user_id | events_fields_for_selects(event_metrics)]
+        fields_for_filter = events_fields_for_filter(query)
+        windowed_events_q = windowed_events_q(site, query)
+
+        windowed_events_q =
+          select_merge(
+            windowed_events_q,
+            [e],
+            map(e, ^Enum.uniq(fields_for_selects ++ fields_for_filter))
+          )
+
+        filtered_windowed_events_q = query_events(subquery(windowed_events_q), site, query)
+
+        events_with_timed_page_transitions_q =
+          from e in filtered_windowed_events_q,
+            group_by: [e.pathname, e.next_pathname, e.session_id],
+            group_by: ^[:_sample_factor | fields_for_selects],
+            where: e.next_timestamp != 0,
+            select: %{
+              pathname: e.pathname,
+              transition: e.next_pathname != e.pathname,
+              duration: sum(e.next_timestamp - e.timestamp)
+            }
+
+        events_with_timed_page_transitions_q =
+          select_merge(
+            events_with_timed_page_transitions_q,
+            [e],
+            map(e, ^[:_sample_factor | fields_for_selects])
+          )
+
+        breakdown_events(
+          subquery(events_with_timed_page_transitions_q),
+          site,
+          query,
+          "event:page",
+          event_metrics,
+          pagination
+        )
       else
         breakdown_events(site, query, "event:page", event_metrics, pagination)
       end
@@ -539,8 +584,9 @@ defmodule Plausible.Stats.Breakdown do
     )
   end
 
+  # TODO %Ecto.Query{from: %Ecto.Query.FromExpr{source: {"events" <> _, _}}} = q
   defp do_group_by(
-         %Ecto.Query{from: %Ecto.Query.FromExpr{source: {"events" <> _, _}}} = q,
+         q,
          "event:page"
        ) do
     from(

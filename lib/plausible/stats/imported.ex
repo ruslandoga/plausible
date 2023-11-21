@@ -173,7 +173,7 @@ defmodule Plausible.Stats.Imported do
           |> select_merge([i], %{
             page: i.page,
             time_on_page: sum(i.time_on_page),
-            _time_on_page_denom: sum(i.pageviews) - sum(i.exits)
+            visits: sum(i.pageviews) - sum(i.exits)
           })
 
         :entry_page ->
@@ -216,12 +216,13 @@ defmodule Plausible.Stats.Imported do
       |> select_joined_metrics(metrics)
       |> apply_order_by(metrics)
 
-    q =
-      if dim == :page and :time_on_page in metrics do
-        where(q, [s, i], s._time_on_page_denom + i._time_on_page_denom > 0)
-      else
-        q
-      end
+    # TODO
+    # q =
+    #   if dim == :page and :time_on_page in metrics do
+    #     where(q, [s, i], s.visits + i.visits > 0)
+    #   else
+    #     q
+    #   end
 
     case dim do
       :source ->
@@ -509,7 +510,7 @@ defmodule Plausible.Stats.Imported do
     q =
       select_merge(q, [s, i], %{
         time_on_page:
-          (s._time_on_page_nom + i.time_on_page) / (s._time_on_page_denom + i._time_on_page_denom)
+          (sum(s.duration) + i.time_on_page) / (fragment("countIf(?)", s.transition) + i.visits)
       })
 
     select_joined_metrics(q, rest)

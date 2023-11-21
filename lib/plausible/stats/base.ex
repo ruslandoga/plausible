@@ -8,7 +8,7 @@ defmodule Plausible.Stats.Base do
   @no_ref "Direct / None"
   @not_set "(not set)"
 
-  def base_event_query(query_source \\ "events_v2", site, query) do
+  def base_event_query(query_source \\ nil, site, query) do
     events_q = query_events(query_source, site, query)
 
     if Enum.any?(Filters.visit_props(), &query.filters["visit:" <> &1]) do
@@ -31,16 +31,17 @@ defmodule Plausible.Stats.Base do
   end
 
   # credo:disable-for-next-line Credo.Check.Refactor.CyclomaticComplexity
-  def query_events(query_source \\ "events_v2", site, query) do
+  def query_events(query_source \\ nil, site, query) do
     {first_datetime, last_datetime} = utc_boundaries(query, site)
 
     q =
-      from(
-        e in query_source,
-        where: e.site_id == ^site.id,
-        where: e.timestamp >= ^first_datetime and e.timestamp < ^last_datetime
-      )
-      |> add_sample_hint(query)
+      query_source ||
+        from(
+          e in "events_v2",
+          where: e.site_id == ^site.id,
+          where: e.timestamp >= ^first_datetime and e.timestamp < ^last_datetime
+        )
+        |> add_sample_hint(query)
 
     q = from(e in q, where: ^dynamic_filter_condition(query, "event:page", :pathname))
 
@@ -336,18 +337,10 @@ defmodule Plausible.Stats.Base do
       select_merge(q, [e], %{
         time_on_page:
           fragment(
-            "avgIf(?,?) * any(_sample_factor)",
-            e.next_timestamp - e.timestamp,
-            e.next_timestamp != 0
-          ),
-        _time_on_page_nom:
-          fragment(
-            "sumIf(?,?) * any(_sample_factor)",
-            e.next_timestamp - e.timestamp,
-            e.next_timestamp != 0
-          ),
-        _time_on_page_denom:
-          fragment("countIf(?,?) * any(_sample_factor)", e.timestamp, e.next_timestamp != 0)
+            "sum(?)/countIf(?) * any(_sample_factor)",
+            e.duration,
+            e.transition
+          )
       })
 
     select_event_metrics(q, rest)
