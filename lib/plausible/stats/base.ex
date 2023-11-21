@@ -8,8 +8,8 @@ defmodule Plausible.Stats.Base do
   @no_ref "Direct / None"
   @not_set "(not set)"
 
-  def base_event_query(site, query) do
-    events_q = query_events(site, query)
+  def base_event_query(query_source \\ "events_v2", site, query) do
+    events_q = query_events(query_source, site, query)
 
     if Enum.any?(Filters.visit_props(), &query.filters["visit:" <> &1]) do
       sessions_q =
@@ -31,12 +31,12 @@ defmodule Plausible.Stats.Base do
   end
 
   # credo:disable-for-next-line Credo.Check.Refactor.CyclomaticComplexity
-  def query_events(site, query) do
+  def query_events(query_source \\ "events_v2", site, query) do
     {first_datetime, last_datetime} = utc_boundaries(query, site)
 
     q =
       from(
-        e in "events_v2",
+        e in query_source,
         where: e.site_id == ^site.id,
         where: e.timestamp >= ^first_datetime and e.timestamp < ^last_datetime
       )
