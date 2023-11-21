@@ -95,52 +95,10 @@ defmodule Plausible.Stats.Breakdown do
   end
 
   def breakdown(site, query, "event:page" = property, metrics, pagination) do
-    event_metrics = Enum.filter(metrics, &(&1 in @event_metrics))
-    session_metrics = Enum.filter(metrics, &(&1 in @session_metrics))
-
-    event_result = breakdown_events(site, query, "event:page", event_metrics, pagination)
-
-    event_result =
-      if :time_on_page in metrics do
-        pages = Enum.map(event_result, & &1[:page])
-        time_on_page_result = breakdown_time_on_page(site, query, pages)
-
-        Enum.map(event_result, fn row ->
-          Map.put(row, :time_on_page, time_on_page_result[row[:page]])
-        end)
-      else
-        event_result
-      end
-
-    new_query =
-      case event_result do
-        [] ->
-          query
-
-        pages ->
-          Query.put_filter(query, "visit:entry_page", {:member, Enum.map(pages, & &1[:page])})
-      end
-
-    trace(new_query, property, metrics)
-
-    if Enum.any?(event_metrics) && Enum.empty?(event_result) do
-      []
+    if FunWithFlags.enabled?(:single_query_page_breakdown) do
+      single_q_page_breakdown(site, query, property, metrics, pagination)
     else
-      {limit, _page} = pagination
-
-      session_result =
-        breakdown_sessions(site, new_query, "visit:entry_page", session_metrics, {limit, 1})
-        |> transform_keys(%{entry_page: :page})
-
-      metrics = metrics ++ [:page]
-
-      zip_results(
-        event_result,
-        session_result,
-        :page,
-        metrics
-      )
-      |> Enum.map(&Map.take(&1, metrics))
+      prev_page_breakdown(site, query, property, metrics, pagination)
     end
   end
 
@@ -197,8 +155,10 @@ defmodule Plausible.Stats.Breakdown do
 
   defp breakdown_events(_, _, _, [], _), do: []
 
-  defp breakdown_events(site, query, property, metrics, pagination) do
-    from(e in base_event_query(site, query),
+  defp breakdown_events(base_event_q \\ nil, site, query, property, metrics, pagination) do
+    base_event_q = base_event_q || base_event_query(site, query)
+
+    from(e in base_event_q,
       order_by: [desc: fragment("uniq(?)", e.user_id)],
       select: %{}
     )
@@ -206,8 +166,205 @@ defmodule Plausible.Stats.Breakdown do
     |> select_event_metrics(metrics)
     |> merge_imported(site, query, property, metrics)
     |> apply_pagination(pagination)
+    |> tap(fn q ->
+      {sql, params} = Plausible.ClickhouseRepo.to_sql(:all, q)
+
+      IO.puts("""
+      SQL: #{sql}
+      Params: #{inspect(params)}
+      """)
+    end)
     |> ClickhouseRepo.all()
     |> transform_keys(%{operating_system: :os})
+  end
+
+  defp events_fields_for_selects(metrics) do
+    Enum.reduce(
+      metrics -- [:visitors, :events, :time_on_page],
+      [],
+      fn metric, fields ->
+        case metric do
+          :pageviews ->
+            [:name | fields]
+
+          _ when metric in [:average_revenue, :total_revenue] ->
+            [:revenue_reporting_amount | fields]
+        end
+      end
+    )
+  end
+
+  defp events_fields_for_filter(query) do
+    fields = []
+
+    fields =
+      if query.filters["event:name"] do
+        [:name | fields]
+      else
+        fields
+      end
+
+    has_props_filter? = Enum.any?(query.filters, &match?({"event:props:" <> _, _}, &1))
+
+    if has_props_filter? do
+      [:"meta.key", :"meta.value" | fields]
+    else
+      fields
+    end
+  end
+
+  defp windowed_events_q(site, query) do
+    import Ecto.Query
+
+    from e in query_events(site, Query.remove_event_filters(query, [:page, :props])),
+      windows: [
+        event_horizon: [
+          partition_by: e.session_id,
+          order_by: e.timestamp,
+          frame: fragment("ROWS BETWEEN CURRENT ROW AND 1 FOLLOWING")
+        ]
+      ],
+      select: %{
+        next_timestamp: over(fragment("leadInFrame(?)", e.timestamp), :event_horizon),
+        next_pathname: over(fragment("leadInFrame(?)", e.pathname), :event_horizon),
+        timestamp: e.timestamp,
+        pathname: e.pathname,
+        session_id: e.session_id,
+        _sample_factor: fragment("_sample_factor")
+      }
+  end
+
+  defp single_q_page_breakdown(site, query, "event:page" = property, metrics, pagination) do
+    import Ecto.Query
+
+    event_metrics = Enum.filter(metrics, &(&1 in [:time_on_page | @event_metrics]))
+    session_metrics = Enum.filter(metrics, &(&1 in @session_metrics))
+
+    event_result =
+      if :time_on_page in metrics do
+        fields_for_selects = [:user_id | events_fields_for_selects(event_metrics)]
+        fields_for_filter = events_fields_for_filter(query)
+        windowed_events_q = windowed_events_q(site, query)
+
+        windowed_events_q =
+          select_merge(
+            windowed_events_q,
+            [e],
+            map(e, ^Enum.uniq(fields_for_selects ++ fields_for_filter))
+          )
+
+        filtered_windowed_events_q = query_events(subquery(windowed_events_q), site, query)
+
+        events_with_timed_page_transitions_q =
+          from e in filtered_windowed_events_q,
+            group_by: [e.pathname, e.next_pathname, e.session_id],
+            group_by: ^[:_sample_factor | fields_for_selects],
+            where: e.next_timestamp != 0,
+            select: %{
+              pathname: e.pathname,
+              transition: e.next_pathname != e.pathname,
+              duration: sum(e.next_timestamp - e.timestamp)
+            }
+
+        events_with_timed_page_transitions_q =
+          select_merge(
+            events_with_timed_page_transitions_q,
+            [e],
+            map(e, ^[:_sample_factor | fields_for_selects])
+          )
+
+        breakdown_events(
+          subquery(events_with_timed_page_transitions_q),
+          site,
+          query,
+          "event:page",
+          event_metrics,
+          pagination
+        )
+      else
+        breakdown_events(site, query, "event:page", event_metrics, pagination)
+      end
+
+    new_query =
+      case event_result do
+        [] ->
+          query
+
+        pages ->
+          Query.put_filter(query, "visit:entry_page", {:member, Enum.map(pages, & &1[:page])})
+      end
+
+    trace(new_query, property, metrics)
+
+    if Enum.any?(event_metrics) && Enum.empty?(event_result) do
+      []
+    else
+      {limit, _page} = pagination
+
+      session_result =
+        breakdown_sessions(site, new_query, "visit:entry_page", session_metrics, {limit, 1})
+        |> transform_keys(%{entry_page: :page})
+
+      metrics = metrics ++ [:page]
+
+      zip_results(
+        event_result,
+        session_result,
+        :page,
+        metrics
+      )
+      |> Enum.map(&Map.take(&1, metrics))
+    end
+  end
+
+  defp prev_page_breakdown(site, query, "event:page" = property, metrics, pagination) do
+    event_metrics = Enum.filter(metrics, &(&1 in @event_metrics))
+    session_metrics = Enum.filter(metrics, &(&1 in @session_metrics))
+
+    event_result = breakdown_events(site, query, "event:page", event_metrics, pagination)
+
+    event_result =
+      if :time_on_page in metrics do
+        pages = Enum.map(event_result, & &1[:page])
+        time_on_page_result = breakdown_time_on_page(site, query, pages)
+
+        Enum.map(event_result, fn row ->
+          Map.put(row, :time_on_page, time_on_page_result[row[:page]])
+        end)
+      else
+        event_result
+      end
+
+    new_query =
+      case event_result do
+        [] ->
+          query
+
+        pages ->
+          Query.put_filter(query, "visit:entry_page", {:member, Enum.map(pages, & &1[:page])})
+      end
+
+    trace(new_query, property, metrics)
+
+    if Enum.any?(event_metrics) && Enum.empty?(event_result) do
+      []
+    else
+      {limit, _page} = pagination
+
+      session_result =
+        breakdown_sessions(site, new_query, "visit:entry_page", session_metrics, {limit, 1})
+        |> transform_keys(%{entry_page: :page})
+
+      metrics = metrics ++ [:page]
+
+      zip_results(
+        event_result,
+        session_result,
+        :page,
+        metrics
+      )
+      |> Enum.map(&Map.take(&1, metrics))
+    end
   end
 
   defp breakdown_time_on_page(_site, _query, []) do
@@ -427,8 +584,9 @@ defmodule Plausible.Stats.Breakdown do
     )
   end
 
+  # TODO %Ecto.Query{from: %Ecto.Query.FromExpr{source: {"events" <> _, _}}} = q
   defp do_group_by(
-         %Ecto.Query{from: %Ecto.Query.FromExpr{source: {"events" <> _, _}}} = q,
+         q,
          "event:page"
        ) do
     from(
