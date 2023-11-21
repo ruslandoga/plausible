@@ -588,7 +588,7 @@ defmodule Plausible.Stats.Base do
     end
   end
 
-  def split_goals(clauses, map_fn \\ &Function.identity/1) do
+  defp split_goals(clauses, map_fn \\ &Function.identity/1) do
     groups =
       Enum.group_by(clauses, fn {goal_type, _v} -> goal_type end, fn {_k, val} -> map_fn.(val) end)
 
