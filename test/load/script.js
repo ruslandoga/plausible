@@ -1,15 +1,15 @@
 import http from "k6/http";
 
 const PAYLOAD = JSON.stringify({
-  "n":"pageview",
-  "u":"http://loadtest.site/some-page",
-  "d":"loadtest.site",
-  "r":null,
-  "w":1666
+  "n": "pageview",
+  "u": "http://loadtest.site/some-page",
+  "d": "loadtest.site",
+  "r": null,
+  "w": 1666
 });
 
 function newParams() {
-  const ip = (Math.floor(Math.random() * 255) + 1)+"."+(Math.floor(Math.random() * 255))+"."+(Math.floor(Math.random() * 255))+"."+(Math.floor(Math.random() * 255));
+  const ip = (Math.floor(Math.random() * 255) + 1) + "." + (Math.floor(Math.random() * 255)) + "." + (Math.floor(Math.random() * 255)) + "." + (Math.floor(Math.random() * 255));
 
   return {
     headers: {
@@ -49,6 +49,6 @@ export const options = {
   },
 };
 
-export default function() {
+export default function () {
   http.post("http://localhost:8000/api/event", PAYLOAD, newParams());
 };
