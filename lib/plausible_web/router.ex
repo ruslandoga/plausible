@@ -16,6 +16,13 @@ defmodule PlausibleWeb.Router do
     plug PlausibleWeb.LastSeenPlug
   end
 
+  pipeline :mini_browser do
+    plug :accepts, ["html"]
+    plug :fetch_session
+    plug :fetch_live_flash
+    plug :put_secure_browser_headers
+  end
+
   pipeline :shared_link do
     plug :accepts, ["html"]
     plug :put_secure_browser_headers
@@ -189,6 +196,17 @@ defmodule PlausibleWeb.Router do
     post "/password/reset", AuthController, :password_reset
     get "/avatar/:hash", AvatarController, :avatar
     post "/error_report", ErrorReportController, :submit_error_report
+  end
+
+  import Phoenix.LiveDashboard.Router
+
+  scope "/" do
+    pipe_through [:browser, :csrf]
+
+    live_dashboard "/lv-dashboard",
+      additional_pages: [
+        flame_on: FlameOn.DashboardPage
+      ]
   end
 
   scope "/", PlausibleWeb do

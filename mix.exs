@@ -42,7 +42,8 @@ defmodule Plausible.MixProject do
         :tls_certificate_check,
         :opentelemetry_exporter,
         :wx,
-        :observer
+        :observer,
+        :tools
       ]
     ]
   end
@@ -139,6 +140,9 @@ defmodule Plausible.MixProject do
       {:esbuild, "~> 0.7", runtime: Mix.env() in [:dev, :small]},
       {:tailwind, "~> 0.2.0", runtime: Mix.env() in [:dev, :small]},
       {:ex_json_logger, "~> 1.3.0"}
+      {:benchee, "~> 1.2", only: :bench},
+      {:flame_on, "~> 0.6.0"},
+      {:phoenix_live_dashboard, "~> 0.8.3"}
     ]
   end
 
