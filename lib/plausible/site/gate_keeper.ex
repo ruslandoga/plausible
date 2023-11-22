@@ -49,7 +49,13 @@ defmodule Plausible.Site.GateKeeper do
           @policy_for_non_existing_sites
 
         %Site{} = site ->
+          # if :rand.uniform() > 0.97 do
+          #   {t, r} = :timer.tc(fn -> check_rate_limit(site, opts) end)
+          #   IO.inspect(t, label: "tc")
+          #   r
+          # else
           check_rate_limit(site, opts)
+          # end
       end
 
     result

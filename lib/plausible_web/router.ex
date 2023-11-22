@@ -73,11 +73,11 @@ defmodule PlausibleWeb.Router do
     forward "/sent-emails", Bamboo.SentEmailViewerPlug
   end
 
-  on_full_build do
-    use Kaffy.Routes,
-      scope: "/crm",
-      pipe_through: [PlausibleWeb.Plugs.NoRobots, PlausibleWeb.CRMAuthPlug]
-  end
+  # on_full_build do
+  #   use Kaffy.Routes,
+  #     scope: "/crm",
+  #     pipe_through: [PlausibleWeb.Plugs.NoRobots, PlausibleWeb.CRMAuthPlug]
+  # end
 
   on_full_build do
     scope path: "/flags" do
