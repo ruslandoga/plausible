@@ -71,22 +71,37 @@ defmodule Plausible.Site.GateKeeper do
 
   defp check_rate_limit(%Site{ingest_rate_limit_threshold: threshold} = site, opts)
        when is_integer(threshold) do
-    key = Keyword.get(opts, :key, key(site.domain))
+    key = Keyword.get(opts, :key, site.domain)
     scale_ms = site.ingest_rate_limit_scale_seconds * 1_000
 
-    case Hammer.check_rate(key, scale_ms, threshold) do
-      {:deny, _} ->
-        :throttle
-
-      {:allow, _} ->
-        {:allow, site}
-
-      {:error, reason} ->
-        Logger.error(
-          "Error checking rate limit for '#{key}': #{inspect(reason)}. Falling back to: :allow"
-        )
-
-        {:allow, site}
+    case wip_check_rate(key, scale_ms, threshold) do
+      :allow -> {:allow, site}
+      :throttle -> :throttle
     end
+  end
+
+  @table :sites_gate_keeper_rate_limit
+
+  def wip_check_rate_new do
+    @table =
+      :ets.new(@table, [
+        :named_table,
+        :set,
+        :public,
+        {:read_concurrency, true},
+        {:write_concurrency, true},
+        {:decentralized_counters, true}
+      ])
+  end
+
+  @compile inline: [wip_check_rate: 3]
+  defp wip_check_rate(key, scale_ms, threshold) do
+    now = System.system_time(:millisecond)
+    now_bucket = div(now, scale_ms)
+    expires_at = (now_bucket + 1) * scale_ms
+    full_key = {key, now_bucket}
+    # TODO cleanup :)
+    count = :ets.update_counter(@table, full_key, 1, {full_key, 0, expires_at})
+    if threshold >= count, do: :allow, else: :throttle
   end
 end

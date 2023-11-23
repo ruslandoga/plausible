@@ -6,6 +6,8 @@ defmodule Plausible.Application do
   require Logger
 
   def start(_type, _args) do
+    Plausible.Site.GateKeeper.wip_check_rate_new()
+
     children = [
       Plausible.Repo,
       Plausible.ClickhouseRepo,
