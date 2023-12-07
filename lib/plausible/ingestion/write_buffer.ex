@@ -30,6 +30,7 @@ defmodule Plausible.Ingestion.WriteBuffer do
      %{
        buffer: buffer,
        timer: timer,
+       last_insert_at: 0,
        name: Keyword.fetch!(opts, :name),
        insert_sql: Keyword.fetch!(opts, :insert_sql),
        insert_opts: Keyword.fetch!(opts, :insert_opts),
@@ -49,12 +50,13 @@ defmodule Plausible.Ingestion.WriteBuffer do
         buffer_size: state.buffer_size + IO.iodata_length(row_binary)
     }
 
-    if state.buffer_size >= state.max_buffer_size do
+    ms_since_last_insert = now() - state.last_insert_at
+
+    if state.buffer_size >= state.max_buffer_size and ms_since_last_insert >= :timer.seconds(1) do
       Logger.info("#{state.name} buffer full, flushing to ClickHouse")
       Process.cancel_timer(state.timer)
       do_flush(state)
-      new_timer = Process.send_after(self(), :tick, state.flush_interval_ms)
-      {:noreply, %{state | buffer: [], timer: new_timer, buffer_size: 0}}
+      {:noreply, reset_buffer(state)}
     else
       {:noreply, state}
     end
@@ -63,17 +65,14 @@ defmodule Plausible.Ingestion.WriteBuffer do
   @impl true
   def handle_info(:tick, state) do
     do_flush(state)
-    timer = Process.send_after(self(), :tick, state.flush_interval_ms)
-    {:noreply, %{state | buffer: [], buffer_size: 0, timer: timer}}
+    {:noreply, reset_buffer(state)}
   end
 
   @impl true
   def handle_call(:flush, _from, state) do
-    %{timer: timer, flush_interval_ms: flush_interval_ms} = state
-    Process.cancel_timer(timer)
+    Process.cancel_timer(state.timer)
     do_flush(state)
-    new_timer = Process.send_after(self(), :tick, flush_interval_ms)
-    {:reply, :ok, %{state | buffer: [], buffer_size: 0, timer: new_timer}}
+    {:reply, :ok, reset_buffer(state)}
   end
 
   @impl true
@@ -102,6 +101,16 @@ defmodule Plausible.Ingestion.WriteBuffer do
     end
   end
 
+  defp reset_buffer(state) do
+    %{
+      state
+      | buffer: [],
+        buffer_size: 0,
+        last_insert_at: now(),
+        timer: Process.send_after(self(), :tick, state.flush_interval_ms)
+    }
+  end
+
   defp default_flush_interval_ms do
     Keyword.fetch!(Application.get_env(:plausible, IngestRepo), :flush_interval_ms)
   end
@@ -109,6 +118,9 @@ defmodule Plausible.Ingestion.WriteBuffer do
   defp default_max_buffer_size do
     Keyword.fetch!(Application.get_env(:plausible, IngestRepo), :max_buffer_size)
   end
+
+  @compile inline: [now: 0]
+  defp now, do: System.system_time(:millisecond)
 
   @doc false
   def compile_time_prepare(schema) do
