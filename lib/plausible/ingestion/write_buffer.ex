@@ -49,6 +49,11 @@ defmodule Plausible.Ingestion.WriteBuffer do
         buffer_size: state.buffer_size + IO.iodata_length(row_binary)
     }
 
+    {:noreply, state}
+  end
+
+  @impl true
+  def handle_info(:tick, state) do
     if state.buffer_size >= state.max_buffer_size do
       Logger.info("#{state.name} buffer full, flushing to ClickHouse")
       Process.cancel_timer(state.timer)
@@ -58,13 +63,6 @@ defmodule Plausible.Ingestion.WriteBuffer do
     else
       {:noreply, state}
     end
-  end
-
-  @impl true
-  def handle_info(:tick, state) do
-    do_flush(state)
-    timer = Process.send_after(self(), :tick, state.flush_interval_ms)
-    {:noreply, %{state | buffer: [], buffer_size: 0, timer: timer}}
   end
 
   @impl true

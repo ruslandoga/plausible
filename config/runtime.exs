@@ -137,7 +137,7 @@ ch_db_url =
 
 {ch_flush_interval_ms, ""} =
   config_dir
-  |> get_var_from_path_or_env("CLICKHOUSE_FLUSH_INTERVAL_MS", "5000")
+  |> get_var_from_path_or_env("CLICKHOUSE_FLUSH_INTERVAL_MS", "1000")
   |> Integer.parse()
 
 {ch_max_buffer_size, ""} =
