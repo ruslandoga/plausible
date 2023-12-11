@@ -95,7 +95,7 @@ defmodule Plausible.MixProject do
       {:kaffy, "~> 0.10.2", only: [:dev, :test, :staging, :prod]},
       {:location, git: "https://github.com/plausible/location.git"},
       {:mox, "~> 1.0", only: [:test, :small_test]},
-      {:nanoid, "~> 2.0.2"},
+      {:nanoid, "~> 2.1.0"},
       {:nimble_totp, "~> 1.0"},
       {:oauther, "~> 1.3"},
       {:oban, "~> 2.12.0"},
