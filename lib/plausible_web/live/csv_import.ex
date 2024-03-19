@@ -31,18 +31,17 @@ defmodule PlausibleWeb.Live.CSVImport do
         <.csv_picker upload={@uploads.import} />
         <.confirm_button date_range={@date_range} can_confirm?={@can_confirm?} />
 
-        <%= for error <- upload_errors(@uploads.import) do %>
-          <p class="text-red-400"><%= error_to_string(error) %></p>
-        <% end %>
+        <p :for={error <- upload_errors(@uploads.import)} class="text-red-400">
+          <%= error_to_string(error) %>
+        </p>
       </form>
       <div id="imported-tables" class="mt-4 flex flex-wrap">
-        <%= for {table, upload} <- @imported_tables do %>
-          <.imported_table
-            table={table}
-            upload={upload}
-            errors={if(upload, do: upload_errors(@uploads.import, upload), else: [])}
-          />
-        <% end %>
+        <.imported_table
+          :for={{table, upload} <- @imported_tables}
+          table={table}
+          upload={upload}
+          errors={if(upload, do: upload_errors(@uploads.import, upload), else: [])}
+        />
       </div>
     </div>
     """
@@ -82,67 +81,58 @@ defmodule PlausibleWeb.Live.CSVImport do
   end
 
   defp imported_table(assigns) do
+    status =
+      cond do
+        assigns.upload && assigns.upload.progress == 100 -> :success
+        not Enum.empty?(assigns.errors) -> :error
+        true -> :in_progress
+      end
+
+    assigns = assign(assigns, status: status)
+
     ~H"""
-    <div id={@table}>
-      <p>Upload: <%= inspect(@upload) %></p>
-      <p>Errors: <%= inspect(@errors) %></p>
+    <div
+      id={@table}
+      class={[
+        "mt-2 w-full rounded overflow-hidden",
+        case @status do
+          :success -> "bg-green-300 dark:bg-green-600"
+          :error -> "bg-red-300 dark:bg-red-600"
+          :in_progress -> "bg-gray-100 dark:bg-gray-700"
+        end
+      ]}
+    >
+      <div class="flex items-center justify-between">
+        <%= if @upload do %>
+          <Heroicons.document_check
+            :if={@upload.progress == 100}
+            class="w-4 h-4 text-indigo-600 dark:text-green-900"
+          />
+          <PlausibleWeb.Components.Generic.spinner
+            :if={@upload.progress < 100}
+            class="h-4 w-4 text-indigo-600 dark:text-green-600"
+          />
+          <span class="text-sm"><%= @upload.client_name %></span>
+
+          <button
+            phx-click="cancel-upload"
+            phx-value-ref={@upload.ref}
+            class="m-2 flex rounded items-center justify-center hover:bg-indigo-300 dark:hover:bg-indigo-500 transition"
+          >
+            <Heroicons.x_mark class="h-4 w-4" />
+          </button>
+        <% else %>
+          <div class="p-2 flex items-center space-x-2">
+            <Heroicons.document class="w-4 h-4" />
+            <span class="text-sm"><%= @table %>_YYYYMMDD_YYYYMMDD.csv</span>
+          </div>
+        <% end %>
+      </div>
     </div>
+
+    <p :for={error <- @errors} class="text-sm dark:text-red-800"><%= error_to_string(error) %></p>
     """
   end
-
-  # defp table_upload(assigns) do
-  #   bg =
-  #     cond do
-  #       assigns.entry.progress == 100 -> "dark:bg-green-600"
-  #       not Enum.empty?(assigns.errors) -> "dark:bg-red-600"
-  #       true -> "bg-gray-100 dark:bg-gray-700"
-  #     end
-
-  #   assigns = assign(assigns, bg: bg)
-
-  #   ~H"""
-  #   <div class={"mt-2 w-full rounded overflow-hidden " <> @bg}>
-  #     <div class="flex items-center justify-between">
-  #       <div class="p-2 flex items-center space-x-2">
-  #         <Heroicons.document_check
-  #           :if={@entry.progress == 100}
-  #           class="w-4 h-4 text-indigo-600 dark:text-green-900"
-  #         />
-  #         <PlausibleWeb.Components.Generic.spinner
-  #           :if={@entry.progress < 100}
-  #           class="h-4 w-4 text-indigo-600 dark:text-green-600"
-  #         />
-  #         <span class="text-sm"><%= @entry.client_name %></span>
-  #       </div>
-
-  #       <button
-  #         phx-click="cancel-upload"
-  #         phx-value-ref={@entry.ref}
-  #         class="m-2 flex rounded items-center justify-center hover:bg-indigo-300 dark:hover:bg-indigo-500 transition"
-  #       >
-  #         <Heroicons.x_mark class="h-4 w-4" />
-  #       </button>
-  #     </div>
-  #   </div>
-
-  #   <%= for error <- @errors do %>
-  #     <p class="text-sm dark:text-red-800"><%= error_to_string(error) %></p>
-  #   <% end %>
-  #   """
-  # end
-
-  # defp table_upload_placeholder(assigns) do
-  #   ~H"""
-  #   <div class="mt-2 w-full bg-gray-100 dark:bg-gray-700 dark:text-gray-400 rounded overflow-hidden">
-  #     <div class="flex items-center justify-between">
-  #       <div class="p-2 flex items-center space-x-2">
-  #         <Heroicons.document class="w-4 h-4" />
-  #         <span class="text-sm"><%= @table %>_YYYYMMDD_YYYYMMDD.csv</span>
-  #       </div>
-  #     </div>
-  #   </div>
-  #   """
-  # end
 
   @impl true
   def handle_event("validate-upload-form", _params, socket) do
@@ -167,7 +157,9 @@ defmodule PlausibleWeb.Live.CSVImport do
       )
 
     {:noreply,
-     redirect(socket, to: "/#{URI.encode_www_form(site.domain)}/settings/imports-exports")}
+     redirect(socket,
+       to: Routes.site_path(socket, :settings_imports_exports, URI.encode_www_form(site.domain))
+     )}
   end
 
   def handle_event("cancel-upload", %{"ref" => ref}, socket) do
