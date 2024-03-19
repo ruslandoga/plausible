@@ -1,16 +1,16 @@
 defmodule PlausibleWeb.Live.CSVImport do
   use PlausibleWeb, :live_view
-
-  use Phoenix.VerifiedRoutes,
-    router: PlausibleWeb.Router,
-    endpoint: PlausibleWeb.Endpoint
-
   alias Plausible.Imported.CSVImporter
 
   @impl true
   def mount(_params, session, socket) do
     %{"site_id" => site_id, "user_id" => user_id} = session
-    importable_tables = Plausible.Imported.tables()
+
+    imported_tables =
+      Map.new(
+        Plausible.Imported.tables(),
+        fn name -> {name, _upload_entry = nil} end
+      )
 
     socket =
       socket
@@ -19,13 +19,12 @@ defmodule PlausibleWeb.Live.CSVImport do
         user_id: user_id,
         date_range: nil,
         can_confirm?: false,
-        uploaded_tables: %{},
-        importable_tables: importable_tables
+        imported_tables: imported_tables
       )
       |> allow_upload(:import,
         accept: ~w[.csv],
         auto_upload: true,
-        max_entries: length(importable_tables),
+        max_entries: map_size(imported_tables),
         max_file_size: _1GB = 1_000_000_000,
         external: &presign_upload/2,
         progress: &handle_progress/3
@@ -42,18 +41,18 @@ defmodule PlausibleWeb.Live.CSVImport do
       <form action="#" method="post" phx-change="validate-upload-form" phx-submit="submit-upload-form">
         <.csv_picker upload={@uploads.import} />
         <.confirm_button date_range={@date_range} can_confirm?={@can_confirm?} />
+
+        <%= for error <- upload_errors(@uploads.import) do %>
+          <p class="text-red-400"><%= error_to_string(error) %></p>
+        <% end %>
       </form>
-      <div class="mt-4 flex flex-wrap">
-        <%= for table <- @importable_tables do %>
-          <%= if entry_ref = @uploaded_tables[table] do %>
-            <%= if entry = find_upload_entry(@uploads.import.entries, entry_ref) do %>
-              <.table_upload entry={entry} errors={upload_errors(@uploads.import, entry)} />
-            <% else %>
-              <.table_upload_placeholder table={table} />
-            <% end %>
-          <% else %>
-            <.table_upload_placeholder table={table} />
-          <% end %>
+      <div id="imported-tables" class="mt-4 flex flex-wrap">
+        <%= for {table, entry} <- @imported_tables do %>
+          <.imported_table
+            name={table}
+            upload={entry}
+            errors={if(entry, do: upload_errors(@uploads.import, entry), else: [])}
+          />
         <% end %>
       </div>
     </div>
@@ -149,42 +148,7 @@ defmodule PlausibleWeb.Live.CSVImport do
 
   @impl true
   def handle_event("validate-upload-form", _params, socket) do
-    {_uploaded, in_progress} = uploaded_entries(socket, :import)
-
-    socket =
-      Enum.reduce(in_progress, socket, fn entry, socket ->
-        %{
-          uploaded_tables: uploaded_tables,
-          date_range: prev_date_range
-        } =
-          socket.assigns
-
-        parsed =
-          try do
-            CSVImporter.parse_filename!(entry.client_name)
-          rescue
-            _ -> nil
-          end
-
-        if parsed do
-          {table, start_date, end_date} = parsed
-
-          socket =
-            if prev_entry_ref = Map.get(uploaded_tables, table) do
-              unless prev_entry_ref == entry.ref do
-                cancel_upload(socket, :import, prev_entry_ref)
-              end
-            end || socket
-
-          date_range = min_max_date_range(prev_date_range, start_date, end_date)
-          uploaded_tables = Map.put(uploaded_tables, table, entry.ref)
-          assign(socket, uploaded_tables: uploaded_tables, date_range: date_range)
-        else
-          cancel_upload(socket, :import, entry.ref)
-        end
-      end)
-
-    {:noreply, socket}
+    {:noreply, process_imported_tables(socket)}
   end
 
   def handle_event("submit-upload-form", _params, socket) do
@@ -197,8 +161,6 @@ defmodule PlausibleWeb.Live.CSVImport do
         {:ok, %{"s3_url" => meta.s3_url, "filename" => entry.client_name}}
       end)
 
-    # provided :source is set, this call cannot fail
-    # so we are not handling {:error, changeset} here
     {:ok, _job} =
       CSVImporter.new_import(site, user,
         start_date: date_range.first,
@@ -206,19 +168,18 @@ defmodule PlausibleWeb.Live.CSVImport do
         uploads: uploads
       )
 
-    {:noreply, redirect(socket, to: ~p"/#{site.domain}/settings/imports-exports")}
+    {:noreply,
+     redirect(socket, to: "/#{URI.encode_www_form(site.domain)}/settings/imports-exports")}
   end
 
   def handle_event("cancel-upload", %{"ref" => ref}, socket) do
-    # TODO update min max date range
-    # TODO update tables
-    {:noreply, socket |> cancel_upload(:import, ref) |> check_if_can_confirm()}
+    {:noreply, socket |> cancel_upload(:import, ref) |> process_imported_tables()}
   end
 
   defp error_to_string(:too_large), do: "Too large"
   defp error_to_string(:too_many_files), do: "You have selected too many files"
   defp error_to_string(:not_accepted), do: "You have selected an unacceptable file type"
-  defp error_to_string(error), do: to_string(error)
+  defp error_to_string(:external_client_failure), do: "Browser upload failed"
 
   defp presign_upload(entry, socket) do
     %{s3_url: s3_url, presigned_url: upload_url} =
@@ -228,10 +189,8 @@ defmodule PlausibleWeb.Live.CSVImport do
   end
 
   defp handle_progress(:import, entry, socket) do
-    IO.inspect(entry, label: "progress")
-
     if entry.done? do
-      {:noreply, check_if_can_confirm(socket)}
+      {:noreply, process_imported_tables(socket)}
     else
       {:noreply, socket}
     end
@@ -245,19 +204,5 @@ defmodule PlausibleWeb.Live.CSVImport do
       end
 
     assign(socket, can_confirm?: all_uploaded?)
-  end
-
-  defp min_max_date_range(nil, start_date, end_date) do
-    Date.range(start_date, end_date)
-  end
-
-  defp min_max_date_range(%Date.Range{} = date_range, start_date, end_date) do
-    first = Enum.min([date_range.first, start_date], Date)
-    last = Enum.max([date_range.last, end_date], Date)
-    Date.range(first, last)
-  end
-
-  defp find_upload_entry(entries, ref) do
-    Enum.find(entries, fn entry -> entry.ref == ref end)
   end
 end
