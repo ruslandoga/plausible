@@ -6,29 +6,18 @@ defmodule PlausibleWeb.Live.CSVImport do
   def mount(_params, session, socket) do
     %{"site_id" => site_id, "user_id" => user_id} = session
 
-    imported_tables =
-      Map.new(
-        Plausible.Imported.tables(),
-        fn name -> {name, _upload_entry = nil} end
-      )
-
     socket =
       socket
-      |> assign(
-        site_id: site_id,
-        user_id: user_id,
-        date_range: nil,
-        can_confirm?: false,
-        imported_tables: imported_tables
-      )
+      |> assign(site_id: site_id, user_id: user_id)
       |> allow_upload(:import,
         accept: ~w[.csv],
         auto_upload: true,
-        max_entries: map_size(imported_tables),
+        max_entries: length(Plausible.Imported.tables()),
         max_file_size: _1GB = 1_000_000_000,
         external: &presign_upload/2,
         progress: &handle_progress/3
       )
+      |> process_imported_tables()
 
     {:ok, socket}
   end
@@ -47,11 +36,11 @@ defmodule PlausibleWeb.Live.CSVImport do
         <% end %>
       </form>
       <div id="imported-tables" class="mt-4 flex flex-wrap">
-        <%= for {table, entry} <- @imported_tables do %>
+        <%= for {table, upload} <- @imported_tables do %>
           <.imported_table
-            name={table}
-            upload={entry}
-            errors={if(entry, do: upload_errors(@uploads.import, entry), else: [])}
+            table={table}
+            upload={upload}
+            errors={if(upload, do: upload_errors(@uploads.import, upload), else: [])}
           />
         <% end %>
       </div>
@@ -92,59 +81,68 @@ defmodule PlausibleWeb.Live.CSVImport do
     """
   end
 
-  defp table_upload(assigns) do
-    bg =
-      cond do
-        assigns.entry.progress == 100 -> "dark:bg-green-600"
-        not Enum.empty?(assigns.errors) -> "dark:bg-red-600"
-        true -> "bg-gray-100 dark:bg-gray-700"
-      end
-
-    assigns = assign(assigns, bg: bg)
-
+  defp imported_table(assigns) do
     ~H"""
-    <div class={"mt-2 w-full rounded overflow-hidden " <> @bg}>
-      <div class="flex items-center justify-between">
-        <div class="p-2 flex items-center space-x-2">
-          <Heroicons.document_check
-            :if={@entry.progress == 100}
-            class="w-4 h-4 text-indigo-600 dark:text-green-900"
-          />
-          <PlausibleWeb.Components.Generic.spinner
-            :if={@entry.progress < 100}
-            class="h-4 w-4 text-indigo-600 dark:text-green-600"
-          />
-          <span class="text-sm"><%= @entry.client_name %></span>
-        </div>
-
-        <button
-          phx-click="cancel-upload"
-          phx-value-ref={@entry.ref}
-          class="m-2 flex rounded items-center justify-center hover:bg-indigo-300 dark:hover:bg-indigo-500 transition"
-        >
-          <Heroicons.x_mark class="h-4 w-4" />
-        </button>
-      </div>
-    </div>
-
-    <%= for error <- @errors do %>
-      <p class="text-sm dark:text-red-800"><%= error_to_string(error) %></p>
-    <% end %>
-    """
-  end
-
-  defp table_upload_placeholder(assigns) do
-    ~H"""
-    <div class="mt-2 w-full bg-gray-100 dark:bg-gray-700 dark:text-gray-400 rounded overflow-hidden">
-      <div class="flex items-center justify-between">
-        <div class="p-2 flex items-center space-x-2">
-          <Heroicons.document class="w-4 h-4" />
-          <span class="text-sm"><%= @table %>_YYYYMMDD_YYYYMMDD.csv</span>
-        </div>
-      </div>
+    <div id={@table}>
+      <p>Upload: <%= inspect(@upload) %></p>
+      <p>Errors: <%= inspect(@errors) %></p>
     </div>
     """
   end
+
+  # defp table_upload(assigns) do
+  #   bg =
+  #     cond do
+  #       assigns.entry.progress == 100 -> "dark:bg-green-600"
+  #       not Enum.empty?(assigns.errors) -> "dark:bg-red-600"
+  #       true -> "bg-gray-100 dark:bg-gray-700"
+  #     end
+
+  #   assigns = assign(assigns, bg: bg)
+
+  #   ~H"""
+  #   <div class={"mt-2 w-full rounded overflow-hidden " <> @bg}>
+  #     <div class="flex items-center justify-between">
+  #       <div class="p-2 flex items-center space-x-2">
+  #         <Heroicons.document_check
+  #           :if={@entry.progress == 100}
+  #           class="w-4 h-4 text-indigo-600 dark:text-green-900"
+  #         />
+  #         <PlausibleWeb.Components.Generic.spinner
+  #           :if={@entry.progress < 100}
+  #           class="h-4 w-4 text-indigo-600 dark:text-green-600"
+  #         />
+  #         <span class="text-sm"><%= @entry.client_name %></span>
+  #       </div>
+
+  #       <button
+  #         phx-click="cancel-upload"
+  #         phx-value-ref={@entry.ref}
+  #         class="m-2 flex rounded items-center justify-center hover:bg-indigo-300 dark:hover:bg-indigo-500 transition"
+  #       >
+  #         <Heroicons.x_mark class="h-4 w-4" />
+  #       </button>
+  #     </div>
+  #   </div>
+
+  #   <%= for error <- @errors do %>
+  #     <p class="text-sm dark:text-red-800"><%= error_to_string(error) %></p>
+  #   <% end %>
+  #   """
+  # end
+
+  # defp table_upload_placeholder(assigns) do
+  #   ~H"""
+  #   <div class="mt-2 w-full bg-gray-100 dark:bg-gray-700 dark:text-gray-400 rounded overflow-hidden">
+  #     <div class="flex items-center justify-between">
+  #       <div class="p-2 flex items-center space-x-2">
+  #         <Heroicons.document class="w-4 h-4" />
+  #         <span class="text-sm"><%= @table %>_YYYYMMDD_YYYYMMDD.csv</span>
+  #       </div>
+  #     </div>
+  #   </div>
+  #   """
+  # end
 
   @impl true
   def handle_event("validate-upload-form", _params, socket) do
@@ -196,13 +194,35 @@ defmodule PlausibleWeb.Live.CSVImport do
     end
   end
 
-  defp check_if_can_confirm(socket) do
-    all_uploaded? =
-      case uploaded_entries(socket, :import) do
-        {[_ | _] = _completed, [] = _in_progress} -> true
-        {_completed, _in_progress} -> false
-      end
+  defp process_imported_tables(socket) do
+    tables = Plausible.Imported.tables()
+    {completed, in_progress} = uploaded_entries(socket, :import)
 
-    assign(socket, can_confirm?: all_uploaded?)
+    {valid_uploads, invalid_uploads} =
+      Enum.split_with(completed ++ in_progress, &CSVImporter.valid_filename?(&1.client_name))
+
+    imported_tables =
+      Enum.map(tables, fn table ->
+        upload =
+          Enum.find(valid_uploads, fn upload ->
+            CSVImporter.extract_table(upload.client_name) == table
+          end)
+
+        {table, upload}
+      end)
+
+    date_range = CSVImporter.date_range(Enum.map(valid_uploads, & &1.client_name))
+    all_uploaded? = completed != [] and in_progress == []
+
+    socket =
+      Enum.reduce(invalid_uploads, socket, fn upload, socket ->
+        cancel_upload(socket, :import, upload.ref)
+      end)
+
+    assign(socket,
+      imported_tables: imported_tables,
+      date_range: date_range,
+      can_confirm?: all_uploaded?
+    )
   end
 end

@@ -174,4 +174,47 @@ defmodule Plausible.Imported.CSVImporter do
   def parse_filename!(_filename) do
     raise ArgumentError, "invalid filename"
   end
+
+  @doc """
+  Checks if the provided filename conforms to the expected format.
+
+  Examples:
+
+      iex> valid_filename?("my_data.csv")
+      false
+
+      iex> valid_filename?("imported_devices_00010101_20250101.csv")
+      true
+
+  """
+  @spec valid_filename?(String.t()) :: boolean
+  def valid_filename?(filename) do
+    try do
+      parse_filename!(filename)
+    else
+      _ -> true
+    rescue
+      _ -> false
+    end
+  end
+
+  @doc """
+  Extracts the table name from the provided filename.
+
+  Raises if the filename doesn't conform to the expected format.
+
+  Examples:
+
+      iex> extract_table("my_data.csv")
+      ** (ArgumentError) invalid filename
+
+      iex> extract_table("imported_devices_00010101_20250101.csv")
+      "imported_devices"
+
+  """
+  @spec extract_table(String.t()) :: String.t()
+  def extract_table(filename) do
+    {table, _start_date, _end_date} = parse_filename!(filename)
+    table
+  end
 end
