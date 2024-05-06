@@ -2,7 +2,7 @@
 # platform specific, it makes sense to build it in the docker
 
 #### Builder
-FROM hexpm/elixir:1.16.0-erlang-26.2.1-alpine-3.18.4 as buildcontainer
+FROM hexpm/elixir:1.16.2-erlang-26.2.5-alpine-3.19.1 as buildcontainer
 
 ARG MIX_ENV=ce
 
