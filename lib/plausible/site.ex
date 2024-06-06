@@ -211,7 +211,7 @@ defmodule Plausible.Site do
   defp validate_timezone(changeset) do
     tz = get_field(changeset, :timezone)
 
-    if Timex.is_valid_timezone?(tz) do
+    if TzData.timezone_exists?(tz) do
       changeset
     else
       add_error(changeset, :timezone, "is invalid")

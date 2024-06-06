@@ -153,6 +153,7 @@ defmodule Plausible.Exports do
             ["expiry-date=", expiry_date, ", rule-id=", _rule_id] =
               String.split(x_amz_expiration, "\"", trim: true)
 
+            # TODO
             Timex.parse!(expiry_date, "{RFC1123}")
           end
 
@@ -220,8 +221,8 @@ defmodule Plausible.Exports do
 
     suffix =
       if date_range do
-        first_date = Timex.format!(date_range.first, "{YYYY}{0M}{0D}")
-        last_date = Timex.format!(date_range.last, "{YYYY}{0M}{0D}")
+        first_date = Calendar.strftime(date_range.first, "%Y%m%d")
+        last_date = Calendar.strftime(date_range.last, "%Y%m%d")
         "_#{first_date}_#{last_date}" <> extname
       else
         extname

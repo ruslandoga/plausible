@@ -57,4 +57,10 @@ defmodule Plausible.Timezones do
         acc
     end
   end
+
+  def today(tz) do
+    DateTime.utc_now()
+    |> DateTime.shift_zone!(tz)
+    |> DateTime.to_date()
+  end
 end
