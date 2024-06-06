@@ -179,7 +179,7 @@ defmodule Plausible.Release do
 
     # Start the Repo(s) for myapp
     IO.puts("Starting repos..")
-    Enum.each(repos(), & &1.start_link(pool_size: 2))
+    Enum.each([Plausible.ClickhouseRepo | repos()], & &1.start_link(pool_size: 2))
   end
 
   defp seeds_path(repo), do: priv_path_for(repo, "seeds.exs")

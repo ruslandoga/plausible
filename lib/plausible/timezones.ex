@@ -12,7 +12,7 @@ defmodule Plausible.Timezones do
       %DateTime{} = tz_dt ->
         Timex.Timezone.convert(tz_dt, "UTC")
 
-      %Timex.AmbiguousDateTime{after: after_dt} ->
+      %{__struct__: Timex.AmbiguousDateTime, after: after_dt} ->
         Timex.Timezone.convert(after_dt, "UTC")
 
       {:error, {:could_not_resolve_timezone, _, _, _}} ->
@@ -33,7 +33,7 @@ defmodule Plausible.Timezones do
 
   defp build_option(timezone_code, acc, now) do
     case Timex.Timezone.get(timezone_code, now) do
-      %Timex.TimezoneInfo{} = timezone_info ->
+      %{__struct__: Timex.TimezoneInfo} = timezone_info ->
         offset_in_minutes = timezone_info |> Timex.Timezone.total_offset() |> div(-60)
 
         hhmm_formatted_offset =
