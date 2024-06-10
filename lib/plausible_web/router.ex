@@ -2,6 +2,7 @@ defmodule PlausibleWeb.Router do
   use PlausibleWeb, :router
   use Plausible
   import Phoenix.LiveView.Router
+  import Phoenix.LiveDashboard.Router
   @two_weeks_in_seconds 60 * 60 * 24 * 14
 
   pipeline :browser do
@@ -64,6 +65,21 @@ defmodule PlausibleWeb.Router do
 
   if Mix.env() in [:dev, :ce_dev] do
     forward "/sent-emails", Bamboo.SentEmailViewerPlug
+  end
+
+  scope "/" do
+    pipe_through [:browser, :csrf]
+
+    live_dashboard "/lv-dashboard",
+      metrics: PlausibleWeb.Telemetry,
+      additional_pages: [
+        flame_on: FlameOn.DashboardPage
+      ]
+
+    # live_dashboard "/lv-dashboard",
+    #  additional_pages: [
+    #    flame_on: FlameOn.DashboardPage
+    #  ]
   end
 
   on_ee do
