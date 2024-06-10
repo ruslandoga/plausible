@@ -132,10 +132,16 @@ defmodule PlausibleWeb.Endpoint do
         _ -> {:internal, port: 4002}
       end
 
+    email =
+      case PlausibleWeb.Email.mailer_email_from() do
+        {_, email} -> email
+        email when is_binary(email) -> email
+      end
+
     SiteEncrypt.configure(
       client: :native,
       domains: [host()],
-      emails: [PlausibleWeb.Email.mailer_email_from()],
+      emails: [email],
       db_folder: Path.join(data_dir, "site_encrypt_db"),
       directory_url: directory_url
     )
