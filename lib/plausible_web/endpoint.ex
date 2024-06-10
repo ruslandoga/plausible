@@ -127,8 +127,9 @@ defmodule PlausibleWeb.Endpoint do
 
       directory_url =
         case env do
-          "dev" -> "https://acme-staging-v02.api.letsencrypt.org/directory"
+          "staging" -> "https://acme-staging-v02.api.letsencrypt.org/directory"
           "prod" -> "https://acme-v02.api.letsencrypt.org/directory"
+          _ -> {:internal, port: 4002}
         end
 
       SiteEncrypt.configure(
