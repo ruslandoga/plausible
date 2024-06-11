@@ -13,7 +13,7 @@
     "@heroicons/react": "^2.0.11",
     "@jsonurl/jsonurl": "^1.1.7",
     "@juggle/resize-observer": "^3.3.1",
-    "@kunukn/react-collapse": "^2.2.9",
+    "@kunukn/react-collapse": "^3.0.15",
     "@popperjs/core": "^2.11.6",
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/forms": "^0.5.6",
