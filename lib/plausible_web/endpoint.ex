@@ -138,8 +138,14 @@ defmodule PlausibleWeb.Endpoint do
         email when is_binary(email) -> email
       end
 
+    client =
+      case env do
+        "prod" -> :certbot
+        _ -> :native
+      end
+
     SiteEncrypt.configure(
-      client: :native,
+      client: client,
       domains: [host()],
       emails: [email],
       db_folder: Path.join(data_dir, "site_encrypt_db"),
