@@ -124,6 +124,7 @@ defmodule PlausibleWeb.Endpoint do
   def certification do
     data_dir = Application.fetch_env!(:plausible, :data_dir)
     env = Application.fetch_env!(:plausible, :environment)
+    host = get_in(Application.fetch_env!(:plausible, PlausibleWeb.Endpoint), [:url, :host])
 
     directory_url =
       case env do
@@ -146,7 +147,7 @@ defmodule PlausibleWeb.Endpoint do
 
     SiteEncrypt.configure(
       client: client,
-      domains: [host()],
+      domains: [host],
       emails: [email],
       db_folder: Path.join(data_dir, "site_encrypt_db"),
       directory_url: directory_url
