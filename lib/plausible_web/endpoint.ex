@@ -149,7 +149,7 @@ defmodule PlausibleWeb.Endpoint do
       client: client,
       domains: [host],
       emails: [email],
-      db_folder: Path.join(data_dir, "site_encrypt_db"),
+      db_folder: Path.join(System.tmp_dir!(), "site_encrypt_db"),
       directory_url: directory_url
     )
   end
