@@ -174,8 +174,8 @@ defmodule PlausibleWeb.Api.StatsController do
 
   defp build_full_intervals(%{interval: "week", date_range: range}, labels) do
     for label <- labels, into: %{} do
-      interval_start = Timex.beginning_of_week(label)
-      interval_end = Timex.end_of_week(label)
+      interval_start = Date.beginning_of_week(label)
+      interval_end = Date.end_of_week(label)
 
       within_interval? = Enum.member?(range, interval_start) && Enum.member?(range, interval_end)
 
@@ -185,8 +185,8 @@ defmodule PlausibleWeb.Api.StatsController do
 
   defp build_full_intervals(%{interval: "month", date_range: range}, labels) do
     for label <- labels, into: %{} do
-      interval_start = Timex.beginning_of_month(label)
-      interval_end = Timex.end_of_month(label)
+      interval_start = Date.beginning_of_month(label)
+      interval_end = Date.end_of_month(label)
 
       within_interval? = Enum.member?(range, interval_start) && Enum.member?(range, interval_end)
 
@@ -227,48 +227,41 @@ defmodule PlausibleWeb.Api.StatsController do
   end
 
   defp present_index_for(site, query, dates) do
+    now = DateTime.shift_zone!(DateTime.utc_now(), site.timezone)
+
     case query.interval do
       "hour" ->
-        current_date =
-          Timex.now(site.timezone)
-          |> Timex.format!("{YYYY}-{0M}-{0D} {h24}:00:00")
-
+        current_date = Timex.format!(now, "{YYYY}-{0M}-{0D} {h24}:00:00")
         Enum.find_index(dates, &(&1 == current_date))
 
       "date" ->
-        current_date =
-          Timex.now(site.timezone)
-          |> Timex.to_date()
-
+        current_date = DateTime.to_date(now)
         Enum.find_index(dates, &(&1 == current_date))
 
       "week" ->
         current_date =
-          Timex.now(site.timezone)
-          |> Timex.to_date()
+          now
+          |> DateTime.to_date()
           |> date_or_weekstart(query)
 
         Enum.find_index(dates, &(&1 == current_date))
 
       "month" ->
         current_date =
-          Timex.now(site.timezone)
-          |> Timex.to_date()
-          |> Timex.beginning_of_month()
+          now
+          |> DateTime.to_date()
+          |> Date.beginning_of_month()
 
         Enum.find_index(dates, &(&1 == current_date))
 
       "minute" ->
-        current_date =
-          Timex.now(site.timezone)
-          |> Timex.format!("{YYYY}-{0M}-{0D} {h24}:{0m}:00")
-
+        current_date = Timex.format!(now, "{YYYY}-{0M}-{0D} {h24}:{0m}:00")
         Enum.find_index(dates, &(&1 == current_date))
     end
   end
 
   defp date_or_weekstart(date, query) do
-    weekstart = Timex.beginning_of_week(date)
+    weekstart = Date.beginning_of_week(date)
 
     if Enum.member?(query.date_range, weekstart) do
       weekstart

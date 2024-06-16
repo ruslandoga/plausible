@@ -77,8 +77,8 @@ defmodule Plausible.Stats.Timeseries do
 
     Enum.map(n_buckets..0, fn shift ->
       query.date_range.last
-      |> Timex.beginning_of_month()
-      |> Timex.shift(months: -shift)
+      |> Date.beginning_of_month()
+      |> Date.shift(month: -shift)
     end)
   end
 
@@ -87,7 +87,7 @@ defmodule Plausible.Stats.Timeseries do
 
     Enum.map(0..n_buckets, fn shift ->
       query.date_range.first
-      |> Timex.shift(weeks: shift)
+      |> Date.shift(week: shift)
       |> date_or_weekstart(query)
     end)
   end

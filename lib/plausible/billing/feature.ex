@@ -218,7 +218,7 @@ defmodule Plausible.Billing.Feature.StatsAPI do
     subscription? = Plausible.Billing.Subscriptions.active?(user.subscription)
 
     pre_business_tier_account? =
-      Timex.before?(user.inserted_at, Plausible.Billing.Plans.business_tier_launch())
+      NaiveDateTime.compare(user.inserted_at, Plausible.Billing.Plans.business_tier_launch()) == :lt
 
     cond do
       !subscription? && unlimited_trial? && pre_business_tier_account? ->

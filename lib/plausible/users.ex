@@ -50,8 +50,8 @@ defmodule Plausible.Users do
           @accept_traffic_until_free
 
         user.subscription && user.subscription.next_bill_date ->
-          Timex.shift(user.subscription.next_bill_date,
-            days: Auth.User.subscription_accept_traffic_until_offset_days()
+          Date.shift(user.subscription.next_bill_date,
+            day: Auth.User.subscription_accept_traffic_until_offset_days()
           )
 
         true ->

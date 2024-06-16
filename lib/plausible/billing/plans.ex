@@ -228,7 +228,7 @@ defmodule Plausible.Billing.Plans do
 
   def suggest_tier(user) do
     growth_features =
-      if Timex.before?(user.inserted_at, @business_tier_launch) do
+      if NaiveDateTime.compare(user.inserted_at, @business_tier_launch) == :lt do
         [StatsAPI, Props]
       else
         []
