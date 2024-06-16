@@ -5,10 +5,11 @@ defmodule Plausible.Workers.SendTrialNotificationsTest do
   alias Plausible.Workers.SendTrialNotifications
 
   test "does not send a notification if user didn't create a site" do
-    insert(:user, trial_expiry_date: Timex.now() |> Timex.shift(days: 7))
-    insert(:user, trial_expiry_date: Timex.now() |> Timex.shift(days: 1))
-    insert(:user, trial_expiry_date: Timex.now() |> Timex.shift(days: 0))
-    insert(:user, trial_expiry_date: Timex.now() |> Timex.shift(days: -1))
+    today = Date.utc_today()
+    insert(:user, trial_expiry_date: Date.shift(today, day: 7))
+    insert(:user, trial_expiry_date: Date.shift(today, day: 1))
+    insert(:user, trial_expiry_date: today)
+    insert(:user, trial_expiry_date: Date.shift(today, day: -1))
 
     perform_job(SendTrialNotifications, %{})
 
@@ -25,7 +26,7 @@ defmodule Plausible.Workers.SendTrialNotificationsTest do
   end
 
   test "does not send a notification if user created a site but there are no pageviews" do
-    user = insert(:user, trial_expiry_date: Timex.now() |> Timex.shift(days: 7))
+    user = insert(:user, trial_expiry_date: Date.utc_today() |> Date.shift(day: 7))
     insert(:site, members: [user])
 
     perform_job(SendTrialNotifications, %{})
@@ -34,7 +35,7 @@ defmodule Plausible.Workers.SendTrialNotificationsTest do
   end
 
   test "does not send a notification if user is a collaborator on sites but not an owner" do
-    user = insert(:user, trial_expiry_date: Timex.now())
+    user = insert(:user, trial_expiry_date: Date.utc_today())
 
     site =
       insert(:site,
@@ -52,7 +53,7 @@ defmodule Plausible.Workers.SendTrialNotificationsTest do
 
   describe "with site and pageviews" do
     test "sends a reminder 7 days before trial ends (16 days after user signed up)" do
-      user = insert(:user, trial_expiry_date: Timex.now() |> Timex.shift(days: 7))
+      user = insert(:user, trial_expiry_date: Date.utc_today() |> Date.shift(day: 7))
       site = insert(:site, members: [user])
       populate_stats(site, [build(:pageview)])
 
@@ -62,7 +63,7 @@ defmodule Plausible.Workers.SendTrialNotificationsTest do
     end
 
     test "sends an upgrade email the day before the trial ends" do
-      user = insert(:user, trial_expiry_date: Timex.now() |> Timex.shift(days: 1))
+      user = insert(:user, trial_expiry_date: Date._utc_today() |> Date.shift(day: 1))
       site = insert(:site, members: [user])
       usage = %{total: 3, custom_events: 0}
 
@@ -78,7 +79,7 @@ defmodule Plausible.Workers.SendTrialNotificationsTest do
     end
 
     test "sends an upgrade email the day the trial ends" do
-      user = insert(:user, trial_expiry_date: Timex.today())
+      user = insert(:user, trial_expiry_date: Date.utc_today())
       site = insert(:site, members: [user])
       usage = %{total: 3, custom_events: 0}
 
@@ -94,7 +95,7 @@ defmodule Plausible.Workers.SendTrialNotificationsTest do
     end
 
     test "does not include custom event note if user has not used custom events" do
-      user = insert(:user, trial_expiry_date: Timex.today())
+      user = insert(:user, trial_expiry_date: Date.utc_today())
       usage = %{total: 9_000, custom_events: 0}
 
       email = PlausibleWeb.Email.trial_upgrade_email(user, "today", usage)
@@ -104,7 +105,7 @@ defmodule Plausible.Workers.SendTrialNotificationsTest do
     end
 
     test "includes custom event note if user has used custom events" do
-      user = insert(:user, trial_expiry_date: Timex.today())
+      user = insert(:user, trial_expiry_date: Date.utc_today())
       usage = %{total: 9_100, custom_events: 100}
 
       email = PlausibleWeb.Email.trial_upgrade_email(user, "today", usage)
@@ -114,7 +115,7 @@ defmodule Plausible.Workers.SendTrialNotificationsTest do
     end
 
     test "sends a trial over email the day after the trial ends" do
-      user = insert(:user, trial_expiry_date: Timex.today() |> Timex.shift(days: -1))
+      user = insert(:user, trial_expiry_date: Date.utc_today() |> Date.shift(day: -1))
       site = insert(:site, members: [user])
 
       populate_stats(site, [
@@ -129,7 +130,7 @@ defmodule Plausible.Workers.SendTrialNotificationsTest do
     end
 
     test "does not send a notification if user has a subscription" do
-      user = insert(:user, trial_expiry_date: Timex.now() |> Timex.shift(days: 7))
+      user = insert(:user, trial_expiry_date: Date.utc_today() |> Date.shift(day: 7))
       site = insert(:site, members: [user])
 
       populate_stats(site, [

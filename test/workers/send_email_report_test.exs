@@ -138,11 +138,11 @@ defmodule Plausible.Workers.SendEmailReportTest do
     end
 
     test "renders correct signs (+/-) and trend colors for negative percentage changes" do
-      now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
-      week_ago = now |> Timex.shift(days: -7)
-      two_weeks_ago = now |> Timex.shift(days: -14)
+      now = NaiveDateTime.utc_now(:second)
+      week_ago = now |> NaiveDateTime.shift(day: -7)
+      two_weeks_ago = now |> NaiveDateTime.shift(day: -14)
 
-      site = insert(:site, inserted_at: Timex.shift(now, days: -15))
+      site = insert(:site, inserted_at: NaiveDateTime.shift(now, day: -15))
       insert(:weekly_report, site: site, recipients: ["user@email.com"])
 
       populate_stats(site, [
@@ -173,11 +173,11 @@ defmodule Plausible.Workers.SendEmailReportTest do
     end
 
     test "renders 0% changes with a green color and without a sign" do
-      now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
-      week_ago = now |> Timex.shift(days: -7)
-      two_weeks_ago = now |> Timex.shift(days: -14)
+      now = NaiveDateTime.utc_now(:second)
+      week_ago = now |> NaiveDateTime.shift(day: -7)
+      two_weeks_ago = now |> NaiveDateTime.shift(day: -14)
 
-      site = insert(:site, inserted_at: Timex.shift(now, days: -15))
+      site = insert(:site, inserted_at: NaiveDateTime.shift(now, day: -15))
       insert(:weekly_report, site: site, recipients: ["user@email.com"])
 
       populate_stats(site, [
@@ -212,10 +212,11 @@ defmodule Plausible.Workers.SendEmailReportTest do
       insert(:monthly_report, site: site, recipients: ["user@email.com", "user2@email.com"])
 
       last_month =
-        Timex.now(site.timezone)
-        |> Timex.shift(months: -1)
-        |> Timex.beginning_of_month()
-        |> Timex.format!("{Mfull}")
+        DateTime.utc_now()
+        |> DateTime.shift_zone!(site.timezone)
+        |> DateTime.shift(month: -1)
+        |> Date.beginning_of_month()
+        |> Calendar.format!("{Mfull}")
 
       perform_job(SendEmailReport, %{"site_id" => site.id, "interval" => "monthly"})
 
