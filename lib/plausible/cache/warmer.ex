@@ -69,7 +69,8 @@ defmodule Plausible.Cache.Warmer do
     cache_name = Keyword.fetch!(opts, :cache_name)
     warmer_fn = Keyword.fetch!(opts, :warmer_fn)
 
-    Logger.info("#{__MODULE__} running #{inspect(warmer_fn)} on #{cache_name}...")
+    log_level = if Plausible.ee?(), do: :info, else: :debug
+    Logger.log(log_level, "#{__MODULE__} running #{inspect(warmer_fn)} on #{cache_name}...")
 
     warmer_fn.(opts)
 
