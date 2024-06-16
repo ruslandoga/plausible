@@ -122,7 +122,7 @@ defmodule PlausibleWeb.Endpoint do
   # on_ce do
   @impl SiteEncrypt
   def certification do
-    host = PlausibleWeb.Endpoint.host()
+    domain = System.fetch_env!("SITE_ENCRYPT_DOMAIN")
 
     email =
       case PlausibleWeb.Email.mailer_email_from() do
@@ -145,7 +145,7 @@ defmodule PlausibleWeb.Endpoint do
     SiteEncrypt.configure(
       mode: mode,
       client: client,
-      domains: [host],
+      domains: [domain],
       emails: [email],
       db_folder: db_folder,
       directory_url: directory_url
