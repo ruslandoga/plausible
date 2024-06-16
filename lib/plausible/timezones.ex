@@ -8,27 +8,43 @@ defmodule Plausible.Timezones do
 
   @spec to_utc_datetime(NaiveDateTime.t(), String.t()) :: DateTime.t()
   def to_utc_datetime(naive_date_time, timezone) do
-    case Timex.to_datetime(naive_date_time, timezone) do
-      %DateTime{} = tz_dt ->
-        Timex.Timezone.convert(tz_dt, "UTC")
+    case DateTime.from_naive(naive_date_time, timezone) do
+      {:ok, tz_dt} ->
+        DateTime.shift_zone!(tz_dt, "Etc/UTC")
 
-      %{__struct__: Timex.AmbiguousDateTime, after: after_dt} ->
-        Timex.Timezone.convert(after_dt, "UTC")
+      {:gap, before_dt, after_dt} ->
+        DateTime.shift_zone!(after_dt, "Etc/UTC")
 
-      {:error, {:could_not_resolve_timezone, _, _, _}} ->
-        Timex.Timezone.convert(naive_date_time, "UTC")
+      {:ambiguous, before_dt, after_dt} ->
+        DateTime.shift_zone!(after_dt, "Etc/UTC")
+
+      {:error, :time_zone_not_found} ->
+        DateTime.from_naive!(naive_date_time, "Etc/UTC")
     end
   end
 
   @spec to_date_in_timezone(Date.t() | NaiveDateTime.t() | DateTime.t(), String.t()) :: Date.t()
   def to_date_in_timezone(dt, timezone) do
-    to_datetime_in_timezone(dt, timezone) |> Timex.to_date()
+    to_datetime_in_timezone(dt, timezone) |> DateTime.to_date()
   end
 
   @spec to_datetime_in_timezone(Date.t() | NaiveDateTime.t() | DateTime.t(), String.t()) ::
           DateTime.t()
-  def to_datetime_in_timezone(dt, timezone) do
-    dt |> Timex.to_datetime("UTC") |> Timex.Timezone.convert(timezone)
+  def to_datetime_in_timezone(%NaiveDateTime{} = naive, timezone) do
+    naive
+    |> DateTime.from_naive!("Etc/UTC")
+    |> to_datetime_in_timezone(timezone)
+  end
+
+  # TODO dates don't have timezones, this function can cause bugs
+  def to_datetime_in_timezone(%Date{} = date, timezone) do
+    date
+    |> DateTime.new!(~T[00:00:00], "Etc/UTC")
+    |> to_datetime_in_timezone(timezone)
+  end
+
+  def to_datetime_in_timezone(%DateTime{} = dt, timezone) do
+    DateTime.shift_zone!(dt, timezone)
   end
 
   defp build_option(timezone_code, acc, now) do

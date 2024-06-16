@@ -331,13 +331,8 @@ defmodule Plausible.Auth.TOTP do
   end
 
   defp fetch_last_used(user) do
-    datetime =
-      from(u in Plausible.Auth.User, where: u.id == ^user.id, select: u.totp_last_used_at)
-      |> Repo.one()
-
-    if datetime do
-      Timex.to_unix(datetime)
-    end
+    from(u in Plausible.Auth.User, where: u.id == ^user.id, select: u.totp_last_used_at)
+    |> Repo.one()
   end
 
   defp bump_last_used!(user) do
