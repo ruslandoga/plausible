@@ -122,16 +122,7 @@ defmodule PlausibleWeb.Endpoint do
   # on_ce do
   @impl SiteEncrypt
   def certification do
-    data_dir = Application.fetch_env!(:plausible, :data_dir)
-    env = Application.fetch_env!(:plausible, :environment)
-    host = get_in(Application.fetch_env!(:plausible, PlausibleWeb.Endpoint), [:url, :host])
-
-    directory_url =
-      case env do
-        "staging" -> "https://acme-staging-v02.api.letsencrypt.org/directory"
-        "prod" -> "https://acme-v02.api.letsencrypt.org/directory"
-        _ -> {:internal, port: 4002}
-      end
+    host = PlausibleWeb.Endpoint.host()
 
     email =
       case PlausibleWeb.Email.mailer_email_from() do
@@ -139,17 +130,24 @@ defmodule PlausibleWeb.Endpoint do
         email when is_binary(email) -> email
       end
 
-    client =
-      case env do
-        "prod" -> :certbot
-        _ -> :native
-      end
+    mode = System.get_env("SITE_ENCRYPT_MODE", "manual") |> String.to_existing_atom()
+    client = System.get_env("SITE_ENCRYPT_CLIENT", "native") |> String.to_existing_atom()
+
+    db_folder =
+      System.get_env("SITE_ENCRYPT_DB_FOLDER", Path.join(System.tmp_dir!(), "site_encrypt_db"))
+
+    directory_url =
+      System.get_env(
+        "SITE_ENCRYPT_DIRECTORY_URL",
+        "https://acme-staging-v02.api.letsencrypt.org/directory"
+      )
 
     SiteEncrypt.configure(
+      mode: mode,
       client: client,
       domains: [host],
       emails: [email],
-      db_folder: Path.join(System.tmp_dir!(), "site_encrypt_db"),
+      db_folder: db_folder,
       directory_url: directory_url
     )
   end
