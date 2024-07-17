@@ -14,7 +14,7 @@
 
     <script src="dist/handlebars.runtime-NWIB6V2M.js"></script>
     <script src="dist/handlebars.templates-43PMFBC7.js"></script>
-    <script src="dist/sidebar_items-D25CDD8C.js"></script>
+    <script src="dist/sidebar_items-0FD44E80.js"></script>
 
       <script src="docs_config.js"></script>
 
@@ -172,6 +172,14 @@ Returns false if usage is equal to the limit.</p></div>
 
     <div class="summary-row">
       <div class="summary-signature">
+        <a href="#eligible_for_upgrade?/1" translate="no">eligible_for_upgrade?(usage)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
         <a href="#ensure_can_add_new_site/1" translate="no">ensure_can_add_new_site(user)</a>
 
       </div>
@@ -179,6 +187,14 @@ Returns false if usage is equal to the limit.</p></div>
         <div class="summary-synopsis"><p>Enterprise plans are always allowed to add more sites (even when
 over limit) to avoid service disruption. Their usage is checked
 in a background job instead (see <code class="inline">check_usage.ex</code>).</p></div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#ensure_feature_access/2" translate="no">ensure_feature_access(usage, plan)</a>
+
+      </div>
 
     </div>
 
@@ -206,6 +222,16 @@ of the given plan.</p></div>
         <a href="#exceeds_last_two_usage_cycles?/2" translate="no">exceeds_last_two_usage_cycles?(cycles_usage, allowed_volume)</a>
 
       </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#suggest_tier/3" translate="no">suggest_tier(usage, highest_growth_plan, highest_business_plan)</a>
+
+      </div>
+
+        <div class="summary-synopsis"><p>Suggests a suitable tier (Growth or Business) for the given usage map.</p></div>
 
     </div>
 
@@ -242,7 +268,7 @@ Returns true if usage is equal to the limit.</p></div>
     </a>
     <h1 class="signature" translate="no">below_limit?(usage, limit)</h1>
 
-      <a href="https://github.com/plausible/analytics/blob/main/lib/plausible/billing/qouta/quota.ex#L111" class="icon-action" rel="help" title="View Source">
+      <a href="https://github.com/plausible/analytics/blob/main/lib/plausible/billing/qouta/quota.ex#L148" class="icon-action" rel="help" title="View Source">
        <i class="ri-code-s-slash-line" aria-hidden="true"></i>
        <span class="sr-only">View Source</span>
      </a>
@@ -260,6 +286,28 @@ Returns true if usage is equal to the limit.</p></div>
 
 <p>Returns whether the usage is below the limit or not.
 Returns false if usage is equal to the limit.</p>
+  </section>
+</section>
+<section class="detail" id="eligible_for_upgrade?/1">
+
+  <div class="detail-header">
+    <a href="#eligible_for_upgrade?/1" class="detail-link" title="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature" translate="no">eligible_for_upgrade?(usage)</h1>
+
+      <a href="https://github.com/plausible/analytics/blob/main/lib/plausible/billing/qouta/quota.ex#L59" class="icon-action" rel="help" title="View Source">
+       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+       <span class="sr-only">View Source</span>
+     </a>
+
+
+  </div>
+
+  <section class="docstring">
+
+
   </section>
 </section>
 <section class="detail" id="ensure_can_add_new_site/1">
@@ -284,6 +332,28 @@ Returns false if usage is equal to the limit.</p>
 <p>Enterprise plans are always allowed to add more sites (even when
 over limit) to avoid service disruption. Their usage is checked
 in a background job instead (see <code class="inline">check_usage.ex</code>).</p>
+  </section>
+</section>
+<section class="detail" id="ensure_feature_access/2">
+
+  <div class="detail-header">
+    <a href="#ensure_feature_access/2" class="detail-link" title="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature" translate="no">ensure_feature_access(usage, plan)</h1>
+
+      <a href="https://github.com/plausible/analytics/blob/main/lib/plausible/billing/qouta/quota.ex#L61" class="icon-action" rel="help" title="View Source">
+       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+       <span class="sr-only">View Source</span>
+     </a>
+
+
+  </div>
+
+  <section class="docstring">
+
+
   </section>
 </section>
 <section class="detail" id="ensure_within_plan_limits/3">
@@ -333,7 +403,7 @@ the other limits are not exceeded.</p>
     </a>
     <h1 class="signature" translate="no">exceeded_cycles(cycles_usage, allowed_volume)</h1>
 
-      <a href="https://github.com/plausible/analytics/blob/main/lib/plausible/billing/qouta/quota.ex#L94" class="icon-action" rel="help" title="View Source">
+      <a href="https://github.com/plausible/analytics/blob/main/lib/plausible/billing/qouta/quota.ex#L131" class="icon-action" rel="help" title="View Source">
        <i class="ri-code-s-slash-line" aria-hidden="true"></i>
        <span class="sr-only">View Source</span>
      </a>
@@ -362,7 +432,7 @@ the other limits are not exceeded.</p>
     </a>
     <h1 class="signature" translate="no">exceeds_last_two_usage_cycles?(cycles_usage, allowed_volume)</h1>
 
-      <a href="https://github.com/plausible/analytics/blob/main/lib/plausible/billing/qouta/quota.ex#L88" class="icon-action" rel="help" title="View Source">
+      <a href="https://github.com/plausible/analytics/blob/main/lib/plausible/billing/qouta/quota.ex#L125" class="icon-action" rel="help" title="View Source">
        <i class="ri-code-s-slash-line" aria-hidden="true"></i>
        <span class="sr-only">View Source</span>
      </a>
@@ -385,6 +455,30 @@ the other limits are not exceeded.</p>
 
   </section>
 </section>
+<section class="detail" id="suggest_tier/3">
+
+  <div class="detail-header">
+    <a href="#suggest_tier/3" class="detail-link" title="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature" translate="no">suggest_tier(usage, highest_growth_plan, highest_business_plan)</h1>
+
+      <a href="https://github.com/plausible/analytics/blob/main/lib/plausible/billing/qouta/quota.ex#L77" class="icon-action" rel="help" title="View Source">
+       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+       <span class="sr-only">View Source</span>
+     </a>
+
+
+  </div>
+
+  <section class="docstring">
+
+<p>Suggests a suitable tier (Growth or Business) for the given usage map.</p><p>If even the highest Business plan does not accommodate the usage, then
+<code class="inline">:custom</code> is returned. This means that this kind of usage should get on
+a custom plan.</p><p><code class="inline">nil</code> is returned if the usage is not eligible for upgrade.</p>
+  </section>
+</section>
 <section class="detail" id="within_limit?/2">
 
   <div class="detail-header">
@@ -394,7 +488,7 @@ the other limits are not exceeded.</p>
     </a>
     <h1 class="signature" translate="no">within_limit?(usage, limit)</h1>
 
-      <a href="https://github.com/plausible/analytics/blob/main/lib/plausible/billing/qouta/quota.ex#L120" class="icon-action" rel="help" title="View Source">
+      <a href="https://github.com/plausible/analytics/blob/main/lib/plausible/billing/qouta/quota.ex#L157" class="icon-action" rel="help" title="View Source">
        <i class="ri-code-s-slash-line" aria-hidden="true"></i>
        <span class="sr-only">View Source</span>
      </a>

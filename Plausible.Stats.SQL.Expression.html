@@ -8,13 +8,13 @@
     <meta name="project" content="Plausible v0.0.1">
 
 
-    <title>Plausible.Site.SpikeNotification — Plausible v0.0.1</title>
+    <title>Plausible.Stats.SQL.Expression — Plausible v0.0.1</title>
     <link rel="stylesheet" href="dist/html-elixir-FM2CSD74.css" />
 
 
     <script src="dist/handlebars.runtime-NWIB6V2M.js"></script>
     <script src="dist/handlebars.templates-43PMFBC7.js"></script>
-    <script src="dist/sidebar_items-D25CDD8C.js"></script>
+    <script src="dist/sidebar_items-0FD44E80.js"></script>
 
       <script src="docs_config.js"></script>
 
@@ -131,16 +131,22 @@ Pages
 
 <h1>
 
-    <a href="https://github.com/plausible/analytics/blob/main/lib/plausible/site/spike_notification.ex#L1" title="View Source" class="icon-action" rel="help">
+    <a href="https://github.com/plausible/analytics/blob/main/lib/plausible/stats/sql/expression.ex#L1" title="View Source" class="icon-action" rel="help">
       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
       <span class="sr-only">View Source</span>
     </a>
 
-  <span translate="no">Plausible.Site.SpikeNotification</span> 
+  <span translate="no">Plausible.Stats.SQL.Expression</span> 
   <small class="app-vsn" translate="no">(Plausible v0.0.1)</small>
 
 </h1>
 
+
+  <section id="moduledoc">
+<p>This module is responsible for generating SQL/Ecto expressions
+for dimensions and metrics used in query SELECT statement.</p><p>Each dimension and metric is tagged with with selected_as for easier
+usage down the line.</p>
+  </section>
 
 
   <section id="summary" class="details-list">
@@ -157,7 +163,7 @@ Pages
 
     <div class="summary-row">
       <div class="summary-signature">
-        <a href="#add_recipient/2" translate="no">add_recipient(schema, recipient)</a>
+        <a href="#event_goal_join/2" translate="no">event_goal_join(events, page_regexes)</a>
 
       </div>
 
@@ -165,7 +171,7 @@ Pages
 
     <div class="summary-row">
       <div class="summary-signature">
-        <a href="#changeset/2" translate="no">changeset(schema, attrs)</a>
+        <a href="#event_metric/1" translate="no">event_metric(unknown)</a>
 
       </div>
 
@@ -173,7 +179,7 @@ Pages
 
     <div class="summary-row">
       <div class="summary-signature">
-        <a href="#remove_recipient/2" translate="no">remove_recipient(schema, recipient)</a>
+        <a href="#select_dimension/5" translate="no">select_dimension(q, key, arg3, arg4, query)</a>
 
       </div>
 
@@ -181,7 +187,7 @@ Pages
 
     <div class="summary-row">
       <div class="summary-signature">
-        <a href="#was_sent/1" translate="no">was_sent(schema)</a>
+        <a href="#session_metric/2" translate="no">session_metric(atom, query)</a>
 
       </div>
 
@@ -200,16 +206,40 @@ Pages
       <span class="text">Functions</span>
     </h1>
     <div class="functions-list">
-<section class="detail" id="add_recipient/2">
+<section class="detail" id="event_goal_join/2">
 
   <div class="detail-header">
-    <a href="#add_recipient/2" class="detail-link" title="Link to this function">
+    <a href="#event_goal_join/2" class="detail-link" title="Link to this macro">
+      <i class="ri-link-m" aria-hidden="true"></i>
+      <span class="sr-only">Link to this macro</span>
+    </a>
+    <h1 class="signature" translate="no">event_goal_join(events, page_regexes)</h1>
+
+      <a href="https://github.com/plausible/analytics/blob/main/lib/plausible/stats/sql/expression.ex#L324" class="icon-action" rel="help" title="View Source">
+       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+       <span class="sr-only">View Source</span>
+     </a>
+
+
+      <span class="note">(macro)</span>
+
+  </div>
+
+  <section class="docstring">
+
+
+  </section>
+</section>
+<section class="detail" id="event_metric/1">
+
+  <div class="detail-header">
+    <a href="#event_metric/1" class="detail-link" title="Link to this function">
       <i class="ri-link-m" aria-hidden="true"></i>
       <span class="sr-only">Link to this function</span>
     </a>
-    <h1 class="signature" translate="no">add_recipient(schema, recipient)</h1>
+    <h1 class="signature" translate="no">event_metric(unknown)</h1>
 
-      <a href="https://github.com/plausible/analytics/blob/main/lib/plausible/site/spike_notification.ex#L21" class="icon-action" rel="help" title="View Source">
+      <a href="https://github.com/plausible/analytics/blob/main/lib/plausible/stats/sql/expression.ex#L190" class="icon-action" rel="help" title="View Source">
        <i class="ri-code-s-slash-line" aria-hidden="true"></i>
        <span class="sr-only">View Source</span>
      </a>
@@ -222,16 +252,16 @@ Pages
 
   </section>
 </section>
-<section class="detail" id="changeset/2">
+<section class="detail" id="select_dimension/5">
 
   <div class="detail-header">
-    <a href="#changeset/2" class="detail-link" title="Link to this function">
+    <a href="#select_dimension/5" class="detail-link" title="Link to this function">
       <i class="ri-link-m" aria-hidden="true"></i>
       <span class="sr-only">Link to this function</span>
     </a>
-    <h1 class="signature" translate="no">changeset(schema, attrs)</h1>
+    <h1 class="signature" translate="no">select_dimension(q, key, arg3, arg4, query)</h1>
 
-      <a href="https://github.com/plausible/analytics/blob/main/lib/plausible/site/spike_notification.ex#L14" class="icon-action" rel="help" title="View Source">
+      <a href="https://github.com/plausible/analytics/blob/main/lib/plausible/stats/sql/expression.ex#L42" class="icon-action" rel="help" title="View Source">
        <i class="ri-code-s-slash-line" aria-hidden="true"></i>
        <span class="sr-only">View Source</span>
      </a>
@@ -244,38 +274,16 @@ Pages
 
   </section>
 </section>
-<section class="detail" id="remove_recipient/2">
+<section class="detail" id="session_metric/2">
 
   <div class="detail-header">
-    <a href="#remove_recipient/2" class="detail-link" title="Link to this function">
+    <a href="#session_metric/2" class="detail-link" title="Link to this function">
       <i class="ri-link-m" aria-hidden="true"></i>
       <span class="sr-only">Link to this function</span>
     </a>
-    <h1 class="signature" translate="no">remove_recipient(schema, recipient)</h1>
+    <h1 class="signature" translate="no">session_metric(atom, query)</h1>
 
-      <a href="https://github.com/plausible/analytics/blob/main/lib/plausible/site/spike_notification.ex#L26" class="icon-action" rel="help" title="View Source">
-       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
-       <span class="sr-only">View Source</span>
-     </a>
-
-
-  </div>
-
-  <section class="docstring">
-
-
-  </section>
-</section>
-<section class="detail" id="was_sent/1">
-
-  <div class="detail-header">
-    <a href="#was_sent/1" class="detail-link" title="Link to this function">
-      <i class="ri-link-m" aria-hidden="true"></i>
-      <span class="sr-only">Link to this function</span>
-    </a>
-    <h1 class="signature" translate="no">was_sent(schema)</h1>
-
-      <a href="https://github.com/plausible/analytics/blob/main/lib/plausible/site/spike_notification.ex#L31" class="icon-action" rel="help" title="View Source">
+      <a href="https://github.com/plausible/analytics/blob/main/lib/plausible/stats/sql/expression.ex#L251" class="icon-action" rel="help" title="View Source">
        <i class="ri-code-s-slash-line" aria-hidden="true"></i>
        <span class="sr-only">View Source</span>
      </a>
