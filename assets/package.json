@@ -27,7 +27,7 @@
     "chartjs-plugin-datalabels": "^2.2.0",
     "classnames": "^2.3.1",
     "d3": "^7.9.0",
-    "dayjs": "^1.11.7",
+    "dayjs": "^1.11.13",
     "iframe-resizer": "^4.3.2",
     "phoenix": "^1.7.2",
     "phoenix_html": "^3.3.1",
