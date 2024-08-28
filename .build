@@ -22,6 +22,7 @@ Plausible.Auth.TOTP.html
 Plausible.Auth.Token.html
 Plausible.Auth.User.html
 Plausible.Auth.UserAdmin.html
+Plausible.Auth.UserSession.html
 Plausible.Auth.html
 Plausible.Billing.Ecto.Feature.html
 Plausible.Billing.Ecto.FeatureList.html
@@ -190,10 +191,12 @@ Plausible.Stats.Imported.Base.html
 Plausible.Stats.Imported.SQL.Builder.html
 Plausible.Stats.Imported.html
 Plausible.Stats.Interval.html
+Plausible.Stats.JSONSchema.html
 Plausible.Stats.Legacy.Dimensions.html
 Plausible.Stats.Metrics.html
 Plausible.Stats.Query.html
 Plausible.Stats.QueryOptimizer.html
+Plausible.Stats.QueryResult.html
 Plausible.Stats.SQL.Expression.html
 Plausible.Stats.SQL.Fragments.html
 Plausible.Stats.SQL.SpecialMetrics.html
@@ -291,6 +294,7 @@ PlausibleWeb.InvitationController.html
 PlausibleWeb.LastSeenPlug.html
 PlausibleWeb.LayoutView.JWT.html
 PlausibleWeb.LayoutView.html
+PlausibleWeb.Live.AuthContext.html
 PlausibleWeb.Live.CSVExport.html
 PlausibleWeb.Live.CSVImport.html
 PlausibleWeb.Live.ChoosePlan.html
@@ -395,6 +399,7 @@ PlausibleWeb.Tracker.html
 PlausibleWeb.TwoFactor.Session.html
 PlausibleWeb.UnsubscribeController.html
 PlausibleWeb.UnsubscribeView.html
+PlausibleWeb.UserAuth.html
 PlausibleWeb.html
 api-reference.html
 assets/logo.png
@@ -426,8 +431,8 @@ dist/merriweather-latin-ext-300-normal-K6L27CZ5.woff2
 dist/merriweather-vietnamese-300-italic-EHHNZPUO.woff2
 dist/merriweather-vietnamese-300-normal-U376L4Z4.woff2
 dist/remixicon-NKANDIL5.woff2
-dist/search_data-A64B235F.js
-dist/sidebar_items-C2C3DA6A.js
+dist/search_data-2C37DF59.js
+dist/sidebar_items-9CE21158.js
 index.html
 readme.html
 search.html
