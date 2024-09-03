@@ -158,6 +158,7 @@ Plausible.Site.Domain.html
 Plausible.Site.GateKeeper.html
 Plausible.Site.GoogleAuth.html
 Plausible.Site.ImportedData.html
+Plausible.Site.InstallationMeta.html
 Plausible.Site.Membership.html
 Plausible.Site.Memberships.AcceptInvitation.html
 Plausible.Site.Memberships.CreateInvitation.html
@@ -181,6 +182,7 @@ Plausible.Stats.Compare.html
 Plausible.Stats.Comparisons.html
 Plausible.Stats.CurrentVisitors.html
 Plausible.Stats.CustomProps.html
+Plausible.Stats.DateTimeRange.html
 Plausible.Stats.EmailReport.html
 Plausible.Stats.FilterSuggestions.html
 Plausible.Stats.Filters.Utils.html
@@ -193,6 +195,7 @@ Plausible.Stats.Imported.html
 Plausible.Stats.Interval.html
 Plausible.Stats.JSONSchema.html
 Plausible.Stats.Legacy.Dimensions.html
+Plausible.Stats.Legacy.QueryBuilder.html
 Plausible.Stats.Metrics.html
 Plausible.Stats.Query.html
 Plausible.Stats.QueryOptimizer.html
@@ -230,6 +233,7 @@ Plausible.Verification.html
 Plausible.Workers.AcceptTrafficUntil.html
 Plausible.Workers.CheckUsage.html
 Plausible.Workers.CleanInvitations.html
+Plausible.Workers.CleanUserSessions.html
 Plausible.Workers.ClickhouseCleanSites.html
 Plausible.Workers.ExpireDomainChangeTransitions.html
 Plausible.Workers.ExportAnalytics.html
@@ -285,13 +289,13 @@ PlausibleWeb.ErrorView.html
 PlausibleWeb.Favicon.html
 PlausibleWeb.FirstLaunchPlug.Test.html
 PlausibleWeb.FirstLaunchPlug.html
+PlausibleWeb.Flows.html
 PlausibleWeb.FormHelpers.html
 PlausibleWeb.GoogleAnalyticsController.html
 PlausibleWeb.GoogleAnalyticsView.html
 PlausibleWeb.HelpScoutController.html
 PlausibleWeb.HelpScoutView.html
 PlausibleWeb.InvitationController.html
-PlausibleWeb.LastSeenPlug.html
 PlausibleWeb.LayoutView.JWT.html
 PlausibleWeb.LayoutView.html
 PlausibleWeb.Live.AuthContext.html
@@ -313,6 +317,7 @@ PlausibleWeb.Live.GoalSettings.Form.html
 PlausibleWeb.Live.GoalSettings.List.html
 PlausibleWeb.Live.GoalSettings.html
 PlausibleWeb.Live.ImportsExportsSettings.html
+PlausibleWeb.Live.Installation.html
 PlausibleWeb.Live.Plugins.API.Settings.html
 PlausibleWeb.Live.Plugins.API.TokenForm.html
 PlausibleWeb.Live.PropsSettings.Form.html
@@ -383,6 +388,7 @@ PlausibleWeb.Plugs.AuthorizePublicAPI.html
 PlausibleWeb.Plugs.ErrorHandler.html
 PlausibleWeb.Plugs.MaybeDisableRegistration.html
 PlausibleWeb.Plugs.NoRobots.html
+PlausibleWeb.Plugs.UserSessionTouch.html
 PlausibleWeb.RefInspector.html
 PlausibleWeb.RemoteIP.html
 PlausibleWeb.RequireAccountPlug.html
@@ -431,8 +437,8 @@ dist/merriweather-latin-ext-300-normal-K6L27CZ5.woff2
 dist/merriweather-vietnamese-300-italic-EHHNZPUO.woff2
 dist/merriweather-vietnamese-300-normal-U376L4Z4.woff2
 dist/remixicon-NKANDIL5.woff2
-dist/search_data-5C4A900C.js
-dist/sidebar_items-9CE21158.js
+dist/search_data-E784FFA1.js
+dist/sidebar_items-5F709355.js
 index.html
 readme.html
 search.html
