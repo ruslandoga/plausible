@@ -359,31 +359,19 @@ if config_env() in [:ce, :ce_dev, :ce_test] do
           # Bunny CDN ciphers to mimic Plausible Cloud
           # these provide more client compatibility according to SSL Labs checks
           ~c"ECDHE-RSA-AES128-CBC-SHA256",
-          # TLS_ECDHE_RSA_WITH_AES_128_CBC_SHA
           ~c"ECDHE-RSA-AES128-CBC-SHA",
-          # TLS_RSA_WITH_AES_128_GCM_SHA256
           ~c"RSA-AES128-GCM-SHA256",
-          # TLS_RSA_WITH_AES_128_CCM_8
           ~c"RSA-AES128-CCM8",
           # TLS_RSA_WITH_AES_128_CCM
-          ~c"RSA-AES128-CCM",
-          # TLS_RSA_WITH_AES_128_CBC_SHA256
+          # ~c"RSA-AES128-CCM"
           ~c"RSA-AES128-CBC-SHA256",
-          # TLS_RSA_WITH_AES_128_CBC_SHA
           ~c"RSA-AES128-CBC-SHA",
-          # TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA384
           ~c"ECDHE-RSA-AES256-CBC-SHA384",
-          # TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA
           ~c"ECDHE-RSA-AES256-CBC-SHA",
-          # TLS_RSA_WITH_AES_256_GCM_SHA384
           ~c"RSA-AES256-GCM-SHA384",
-          # TLS_RSA_WITH_AES_256_CCM_8
           ~c"RSA-AES256-CCM8",
-          # TLS_RSA_WITH_AES_256_CCM
           ~c"RSA-AES256-CCM",
-          # TLS_RSA_WITH_AES_256_CBC_SHA256
           ~c"RSA-AES256-CBC-SHA256",
-          # TLS_RSA_WITH_AES_256_CBC_SHA
           ~c"RSA-AES256-CBC-SHA"
         ]
       ]
