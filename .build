@@ -23,6 +23,7 @@ Plausible.Auth.Token.html
 Plausible.Auth.User.html
 Plausible.Auth.UserAdmin.html
 Plausible.Auth.UserSession.html
+Plausible.Auth.UserSessions.html
 Plausible.Auth.html
 Plausible.Billing.Ecto.Feature.html
 Plausible.Billing.Ecto.FeatureList.html
@@ -402,6 +403,7 @@ PlausibleWeb.SiteController.html
 PlausibleWeb.SiteView.html
 PlausibleWeb.StatsController.html
 PlausibleWeb.StatsView.html
+PlausibleWeb.TestController.html
 PlausibleWeb.Tracker.html
 PlausibleWeb.TwoFactor.Session.html
 PlausibleWeb.UnsubscribeController.html
@@ -438,8 +440,8 @@ dist/merriweather-latin-ext-300-normal-K6L27CZ5.woff2
 dist/merriweather-vietnamese-300-italic-EHHNZPUO.woff2
 dist/merriweather-vietnamese-300-normal-U376L4Z4.woff2
 dist/remixicon-NKANDIL5.woff2
-dist/search_data-797F62D2.js
-dist/sidebar_items-DEB0EA1A.js
+dist/search_data-AA0C3491.js
+dist/sidebar_items-782C955D.js
 index.html
 readme.html
 search.html
