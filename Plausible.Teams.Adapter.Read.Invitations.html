@@ -8,13 +8,13 @@
     <meta name="project" content="Plausible v0.0.1">
 
 
-    <title>Plausible.DebugReplayInfo — Plausible v0.0.1</title>
+    <title>Plausible.Teams.Adapter.Read.Invitations — Plausible v0.0.1</title>
     <link rel="stylesheet" href="dist/html-elixir-FM2CSD74.css" />
 
 
     <script src="dist/handlebars.runtime-NWIB6V2M.js"></script>
     <script src="dist/handlebars.templates-43PMFBC7.js"></script>
-    <script src="dist/sidebar_items-8F191F86.js"></script>
+    <script src="dist/sidebar_items-F7C93BEC.js"></script>
 
       <script src="docs_config.js"></script>
 
@@ -131,19 +131,19 @@ Pages
 
 <h1>
 
-    <a href="https://github.com/plausible/analytics/blob/main/lib/plausible/debug_replay_info.ex#L1" title="View Source" class="icon-action" rel="help">
+    <a href="https://github.com/plausible/analytics/blob/main/lib/plausible/teams/adapter/read/invitations.ex#L1" title="View Source" class="icon-action" rel="help">
       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
       <span class="sr-only">View Source</span>
     </a>
 
-  <span translate="no">Plausible.DebugReplayInfo</span> 
+  <span translate="no">Plausible.Teams.Adapter.Read.Invitations</span> 
   <small class="app-vsn" translate="no">(Plausible v0.0.1)</small>
 
 </h1>
 
 
   <section id="moduledoc">
-<p>Function execution context (with arguments) to Sentry reports.</p>
+<p>Transition adapter for new schema reads</p>
   </section>
 
 
@@ -161,7 +161,7 @@ Pages
 
     <div class="summary-row">
       <div class="summary-signature">
-        <a href="#deserialize/1" translate="no">deserialize(replay_info)</a>
+        <a href="#check_invitation_permissions/4" translate="no">check_invitation_permissions(site, inviter, role, opts)</a>
 
       </div>
 
@@ -169,7 +169,31 @@ Pages
 
     <div class="summary-row">
       <div class="summary-signature">
-        <a href="#include_sentry_replay_info/0" translate="no">include_sentry_replay_info()</a>
+        <a href="#check_team_member_limit/4" translate="no">check_team_member_limit(inviter, site, role, invitee_email)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#ensure_new_membership/4" translate="no">ensure_new_membership(inviter, site, invitee, role)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#ensure_transfer_valid/4" translate="no">ensure_transfer_valid(current_user, site, invitee, role)</a>
+
+      </div>
+
+    </div>
+
+    <div class="summary-row">
+      <div class="summary-signature">
+        <a href="#send_invitation_email/3" translate="no">send_invitation_email(inviter, invitation, invitee)</a>
 
       </div>
 
@@ -188,16 +212,16 @@ Pages
       <span class="text">Functions</span>
     </h1>
     <div class="functions-list">
-<section class="detail" id="deserialize/1">
+<section class="detail" id="check_invitation_permissions/4">
 
   <div class="detail-header">
-    <a href="#deserialize/1" class="detail-link" title="Link to this function">
+    <a href="#check_invitation_permissions/4" class="detail-link" title="Link to this function">
       <i class="ri-link-m" aria-hidden="true"></i>
       <span class="sr-only">Link to this function</span>
     </a>
-    <h1 class="signature" translate="no">deserialize(replay_info)</h1>
+    <h1 class="signature" translate="no">check_invitation_permissions(site, inviter, role, opts)</h1>
 
-      <a href="https://github.com/plausible/analytics/blob/main/lib/plausible/debug_replay_info.ex#L46" class="icon-action" rel="help" title="View Source">
+      <a href="https://github.com/plausible/analytics/blob/main/lib/plausible/teams/adapter/read/invitations.ex#L10" class="icon-action" rel="help" title="View Source">
        <i class="ri-code-s-slash-line" aria-hidden="true"></i>
        <span class="sr-only">View Source</span>
      </a>
@@ -207,31 +231,89 @@ Pages
 
   <section class="docstring">
 
-      <div class="specs">
-
-          <pre translate="no"><span class="attribute">@spec</span> deserialize(<a href="https://hexdocs.pm/elixir/String.html#t:t/0">String.t</a>()) :: <a href="https://hexdocs.pm/elixir/typespecs.html#basic-types">any</a>()</pre>
-
-      </div>
-
 
   </section>
 </section>
-<section class="detail" id="include_sentry_replay_info/0">
+<section class="detail" id="check_team_member_limit/4">
 
   <div class="detail-header">
-    <a href="#include_sentry_replay_info/0" class="detail-link" title="Link to this macro">
+    <a href="#check_team_member_limit/4" class="detail-link" title="Link to this function">
       <i class="ri-link-m" aria-hidden="true"></i>
-      <span class="sr-only">Link to this macro</span>
+      <span class="sr-only">Link to this function</span>
     </a>
-    <h1 class="signature" translate="no">include_sentry_replay_info()</h1>
+    <h1 class="signature" translate="no">check_team_member_limit(inviter, site, role, invitee_email)</h1>
 
-      <a href="https://github.com/plausible/analytics/blob/main/lib/plausible/debug_replay_info.ex#L15" class="icon-action" rel="help" title="View Source">
+      <a href="https://github.com/plausible/analytics/blob/main/lib/plausible/teams/adapter/read/invitations.ex#L32" class="icon-action" rel="help" title="View Source">
        <i class="ri-code-s-slash-line" aria-hidden="true"></i>
        <span class="sr-only">View Source</span>
      </a>
 
 
-      <span class="note">(macro)</span>
+  </div>
+
+  <section class="docstring">
+
+
+  </section>
+</section>
+<section class="detail" id="ensure_new_membership/4">
+
+  <div class="detail-header">
+    <a href="#ensure_new_membership/4" class="detail-link" title="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature" translate="no">ensure_new_membership(inviter, site, invitee, role)</h1>
+
+      <a href="https://github.com/plausible/analytics/blob/main/lib/plausible/teams/adapter/read/invitations.ex#L76" class="icon-action" rel="help" title="View Source">
+       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+       <span class="sr-only">View Source</span>
+     </a>
+
+
+  </div>
+
+  <section class="docstring">
+
+
+  </section>
+</section>
+<section class="detail" id="ensure_transfer_valid/4">
+
+  <div class="detail-header">
+    <a href="#ensure_transfer_valid/4" class="detail-link" title="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature" translate="no">ensure_transfer_valid(current_user, site, invitee, role)</h1>
+
+      <a href="https://github.com/plausible/analytics/blob/main/lib/plausible/teams/adapter/read/invitations.ex#L54" class="icon-action" rel="help" title="View Source">
+       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+       <span class="sr-only">View Source</span>
+     </a>
+
+
+  </div>
+
+  <section class="docstring">
+
+
+  </section>
+</section>
+<section class="detail" id="send_invitation_email/3">
+
+  <div class="detail-header">
+    <a href="#send_invitation_email/3" class="detail-link" title="Link to this function">
+      <i class="ri-link-m" aria-hidden="true"></i>
+      <span class="sr-only">Link to this function</span>
+    </a>
+    <h1 class="signature" translate="no">send_invitation_email(inviter, invitation, invitee)</h1>
+
+      <a href="https://github.com/plausible/analytics/blob/main/lib/plausible/teams/adapter/read/invitations.ex#L96" class="icon-action" rel="help" title="View Source">
+       <i class="ri-code-s-slash-line" aria-hidden="true"></i>
+       <span class="sr-only">View Source</span>
+     </a>
+
 
   </div>
 
