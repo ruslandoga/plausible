@@ -7,7 +7,7 @@ defmodule Plausible.Application do
   require Logger
 
   def start(_type, _args) do
-    on_ee(do: Plausible.License.ensure_valid_license())
+    # on_ee(do: Plausible.License.ensure_valid_license())
     on_ce(do: :inet_db.set_tcp_module(:happy_tcp))
 
     # in CE we start the endpoint under site_encrypt for automatic https
@@ -17,126 +17,126 @@ defmodule Plausible.Application do
       [
         Plausible.Session.BalancerSupervisor,
         Plausible.Cache.Stats,
-        Plausible.PromEx,
-        {Plausible.Auth.TOTP.Vault, key: totp_vault_key()},
-        Plausible.Repo,
-        Plausible.ClickhouseRepo,
-        Plausible.IngestRepo,
-        Plausible.AsyncInsertRepo,
-        Plausible.ImportDeletionRepo,
-        Plausible.Cache.Adapter.child_spec(:customer_currency, :cache_customer_currency,
-          ttl_check_interval: :timer.minutes(5),
-          n_lock_partitions: 1,
-          global_ttl: :timer.minutes(60)
-        ),
-        Plausible.Cache.Adapter.child_spec(:user_agents, :cache_user_agents,
-          ttl_check_interval: :timer.minutes(5),
-          global_ttl: :timer.minutes(60),
-          n_lock_partitions: 1,
-          ets_options: [read_concurrency: true, write_concurrency: true]
-        ),
+        # Plausible.PromEx,
+        # {Plausible.Auth.TOTP.Vault, key: totp_vault_key()},
+        # Plausible.Repo,
+        # Plausible.ClickhouseRepo,
+        # Plausible.IngestRepo,
+        # Plausible.AsyncInsertRepo,
+        # Plausible.ImportDeletionRepo,
+        # Plausible.Cache.Adapter.child_spec(:customer_currency, :cache_customer_currency,
+        #   ttl_check_interval: :timer.minutes(5),
+        #   n_lock_partitions: 1,
+        #   global_ttl: :timer.minutes(60)
+        # ),
+        # Plausible.Cache.Adapter.child_spec(:user_agents, :cache_user_agents,
+        #   ttl_check_interval: :timer.minutes(5),
+        #   global_ttl: :timer.minutes(60),
+        #   n_lock_partitions: 1,
+        #   ets_options: [read_concurrency: true, write_concurrency: true]
+        # ),
         Plausible.Cache.Adapter.child_specs(:sessions, :cache_sessions,
           ttl_check_interval: :timer.seconds(10),
           global_ttl: :timer.minutes(30),
           ets_options: [read_concurrency: true, write_concurrency: true]
-        ),
-        warmed_cache(Plausible.Site.Cache,
-          adapter_opts: [
-            n_lock_partitions: 1,
-            ttl_check_interval: false,
-            ets_options: [read_concurrency: true]
-          ],
-          warmers: [
-            refresh_all:
-              {Plausible.Site.Cache.All,
-               interval: :timer.minutes(15) + Enum.random(1..:timer.seconds(10))},
-            refresh_updated_recently:
-              {Plausible.Site.Cache.RecentlyUpdated, interval: :timer.seconds(30)}
-          ]
-        ),
-        warmed_cache(Plausible.Shield.IPRuleCache,
-          adapter_opts: [
-            n_lock_partitions: 1,
-            ttl_check_interval: false,
-            ets_options: [read_concurrency: true]
-          ],
-          warmers: [
-            refresh_all:
-              {Plausible.Shield.IPRuleCache.All,
-               interval: :timer.minutes(3) + Enum.random(1..:timer.seconds(10))},
-            refresh_updated_recently:
-              {Plausible.Shield.IPRuleCache.RecentlyUpdated, interval: :timer.seconds(35)}
-          ]
-        ),
-        warmed_cache(Plausible.Shield.CountryRuleCache,
-          adapter_opts: [
-            n_lock_partitions: 1,
-            ttl_check_interval: false,
-            ets_options: [read_concurrency: true]
-          ],
-          warmers: [
-            refresh_all:
-              {Plausible.Shield.CountryRuleCache.All,
-               interval: :timer.minutes(3) + Enum.random(1..:timer.seconds(10))},
-            refresh_updated_recently:
-              {Plausible.Shield.CountryRuleCache.RecentlyUpdated, interval: :timer.seconds(35)}
-          ]
-        ),
-        warmed_cache(Plausible.Shield.PageRuleCache,
-          adapter_opts: [
-            n_lock_partitions: 1,
-            ttl_check_interval: false,
-            ets_options: [:bag, read_concurrency: true]
-          ],
-          warmers: [
-            refresh_all:
-              {Plausible.Shield.PageRuleCache.All,
-               interval: :timer.minutes(3) + Enum.random(1..:timer.seconds(10))},
-            refresh_updated_recently:
-              {Plausible.Shield.PageRuleCache.RecentlyUpdated, interval: :timer.seconds(35)}
-          ]
-        ),
-        warmed_cache(Plausible.Shield.HostnameRuleCache,
-          adapter_opts: [
-            n_lock_partitions: 1,
-            ttl_check_interval: false,
-            ets_options: [:bag, read_concurrency: true]
-          ],
-          warmers: [
-            refresh_all:
-              {Plausible.Shield.HostnameRuleCache.All,
-               interval: :timer.minutes(3) + Enum.random(1..:timer.seconds(10))},
-            refresh_updated_recently:
-              {Plausible.Shield.HostnameRuleCache.RecentlyUpdated, interval: :timer.seconds(25)}
-          ]
-        ),
-        on_ee do
-          warmed_cache(Plausible.Stats.SamplingCache,
-            adapter_opts: [
-              n_lock_partitions: 1,
-              ttl_check_interval: false,
-              read_concurrency: true
-            ],
-            warmers: [
-              refresh_all:
-                {Plausible.Stats.SamplingCache.All,
-                 interval: :timer.hours(24) + Enum.random(1..:timer.minutes(60))}
-            ]
-          )
-        end,
-        Plausible.Ingestion.Counters,
-        Plausible.Session.Salts,
-        Supervisor.child_spec(Plausible.Event.WriteBuffer, id: Plausible.Event.WriteBuffer),
-        Supervisor.child_spec(Plausible.Session.WriteBuffer, id: Plausible.Session.WriteBuffer),
-        ReferrerBlocklist,
-        {Plausible.RateLimit, clean_period: :timer.minutes(10)},
-        {Finch, name: Plausible.Finch, pools: finch_pool_config()},
-        {Phoenix.PubSub, name: Plausible.PubSub},
-        endpoint,
-        {Oban, Application.get_env(:plausible, Oban)},
-        on_ee do
-          help_scout_vault()
-        end
+        )
+        # warmed_cache(Plausible.Site.Cache,
+        #   adapter_opts: [
+        #     n_lock_partitions: 1,
+        #     ttl_check_interval: false,
+        #     ets_options: [read_concurrency: true]
+        #   ],
+        #   warmers: [
+        #     refresh_all:
+        #       {Plausible.Site.Cache.All,
+        #        interval: :timer.minutes(15) + Enum.random(1..:timer.seconds(10))},
+        #     refresh_updated_recently:
+        #       {Plausible.Site.Cache.RecentlyUpdated, interval: :timer.seconds(30)}
+        #   ]
+        # ),
+        # warmed_cache(Plausible.Shield.IPRuleCache,
+        #   adapter_opts: [
+        #     n_lock_partitions: 1,
+        #     ttl_check_interval: false,
+        #     ets_options: [read_concurrency: true]
+        #   ],
+        #   warmers: [
+        #     refresh_all:
+        #       {Plausible.Shield.IPRuleCache.All,
+        #        interval: :timer.minutes(3) + Enum.random(1..:timer.seconds(10))},
+        #     refresh_updated_recently:
+        #       {Plausible.Shield.IPRuleCache.RecentlyUpdated, interval: :timer.seconds(35)}
+        #   ]
+        # ),
+        # warmed_cache(Plausible.Shield.CountryRuleCache,
+        #   adapter_opts: [
+        #     n_lock_partitions: 1,
+        #     ttl_check_interval: false,
+        #     ets_options: [read_concurrency: true]
+        #   ],
+        #   warmers: [
+        #     refresh_all:
+        #       {Plausible.Shield.CountryRuleCache.All,
+        #        interval: :timer.minutes(3) + Enum.random(1..:timer.seconds(10))},
+        #     refresh_updated_recently:
+        #       {Plausible.Shield.CountryRuleCache.RecentlyUpdated, interval: :timer.seconds(35)}
+        #   ]
+        # ),
+        # warmed_cache(Plausible.Shield.PageRuleCache,
+        #   adapter_opts: [
+        #     n_lock_partitions: 1,
+        #     ttl_check_interval: false,
+        #     ets_options: [:bag, read_concurrency: true]
+        #   ],
+        #   warmers: [
+        #     refresh_all:
+        #       {Plausible.Shield.PageRuleCache.All,
+        #        interval: :timer.minutes(3) + Enum.random(1..:timer.seconds(10))},
+        #     refresh_updated_recently:
+        #       {Plausible.Shield.PageRuleCache.RecentlyUpdated, interval: :timer.seconds(35)}
+        #   ]
+        # ),
+        # warmed_cache(Plausible.Shield.HostnameRuleCache,
+        #   adapter_opts: [
+        #     n_lock_partitions: 1,
+        #     ttl_check_interval: false,
+        #     ets_options: [:bag, read_concurrency: true]
+        #   ],
+        #   warmers: [
+        #     refresh_all:
+        #       {Plausible.Shield.HostnameRuleCache.All,
+        #        interval: :timer.minutes(3) + Enum.random(1..:timer.seconds(10))},
+        #     refresh_updated_recently:
+        #       {Plausible.Shield.HostnameRuleCache.RecentlyUpdated, interval: :timer.seconds(25)}
+        #   ]
+        # ),
+        # on_ee do
+        #   warmed_cache(Plausible.Stats.SamplingCache,
+        #     adapter_opts: [
+        #       n_lock_partitions: 1,
+        #       ttl_check_interval: false,
+        #       read_concurrency: true
+        #     ],
+        #     warmers: [
+        #       refresh_all:
+        #         {Plausible.Stats.SamplingCache.All,
+        #          interval: :timer.hours(24) + Enum.random(1..:timer.minutes(60))}
+        #     ]
+        #   )
+        # end,
+        # Plausible.Ingestion.Counters,
+        # Plausible.Session.Salts,
+        # Supervisor.child_spec(Plausible.Event.WriteBuffer, id: Plausible.Event.WriteBuffer),
+        # Supervisor.child_spec(Plausible.Session.WriteBuffer, id: Plausible.Session.WriteBuffer),
+        # ReferrerBlocklist,
+        # {Plausible.RateLimit, clean_period: :timer.minutes(10)},
+        # {Finch, name: Plausible.Finch, pools: finch_pool_config()},
+        # {Phoenix.PubSub, name: Plausible.PubSub},
+        # endpoint,
+        # {Oban, Application.get_env(:plausible, Oban)},
+        # on_ee do
+        #   help_scout_vault()
+        # end
       ]
       |> List.flatten()
       |> Enum.reject(&is_nil/1)
@@ -144,13 +144,13 @@ defmodule Plausible.Application do
     opts = [strategy: :one_for_one, name: Plausible.Supervisor]
 
     setup_request_logging()
-    setup_sentry()
+    # setup_sentry()
     setup_opentelemetry()
 
-    setup_geolocation()
-    Location.load_all()
-    Plausible.Ingestion.Source.init()
-    Plausible.Geo.await_loader()
+    # setup_geolocation()
+    # Location.load_all()
+    # Plausible.Ingestion.Source.init()
+    # Plausible.Geo.await_loader()
 
     Supervisor.start_link(List.flatten(children), opts)
   end

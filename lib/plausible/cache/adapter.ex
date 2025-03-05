@@ -134,6 +134,22 @@ defmodule Plausible.Cache.Adapter do
       []
   end
 
+  @spec with_lock(atom(), any(), pos_integer(), (-> result)) :: {:ok, result} | {:error, :timeout}
+        when result: any()
+  def with_lock(cache_name, key, timeout, fun) do
+    full_cache_name = get_name(cache_name, key)
+    result = ConCache.isolated(full_cache_name, key, timeout, fun)
+    {:ok, result}
+  catch
+    :exit, {:timeout, _} ->
+      Sentry.capture_message(
+        "Timeout while executing with lock on key in '#{inspect(cache_name)}'",
+        extra: %{key: key}
+      )
+
+      {:error, :timeout}
+  end
+
   @spec get_names(atom()) :: [atom()]
   def get_names(cache_name) do
     partitions = partitions(cache_name)
@@ -172,4 +188,25 @@ defmodule Plausible.Cache.Adapter do
   defp partitions(cache_name) do
     Application.get_env(:plausible, __MODULE__)[cache_name][:partitions] || 1
   end
+
+  # def tabs2files(cache_name, dir) do
+  #   File.mkdir_p!(dir)
+
+  #   cache_names =
+  #     if partitions(cache_name) == 1 do
+  #       [cache_name]
+  #     else
+  #       Enum.map(1..partitions, fn partition ->
+  #         String.to_atom("#{cache_name}_#{partition}")
+  #       end)
+  #     end
+
+  #   tabs = Enum.map(cache_names, &ConCache.ets/1)
+
+  #   Enum.each(tabs, fn tab ->
+  #     path = Path.join(dir, "#{tab}.dump")
+  #     ets = ConCache.ets(full_cache_name)
+  #     :ok = :ets.tab2file(tab, to_charlist(path))
+  #   end)
+  # end
 end

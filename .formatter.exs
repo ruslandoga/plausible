@@ -4,7 +4,7 @@
   subdirectories: ["priv/*/migrations"],
   inputs: [
     "*.{heex,ex,exs}",
-    "{config,lib,test,extra}/**/*.{heex,ex,exs}",
+    "{bench,config,lib,test,extra}/**/*.{heex,ex,exs}",
     "priv/*/seeds.exs",
     "storybook/**/*.exs"
   ],

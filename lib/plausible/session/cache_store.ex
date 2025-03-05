@@ -8,6 +8,28 @@ defmodule Plausible.Session.CacheStore do
 
   def lock_telemetry_event, do: @lock_telemetry_event
 
+  def old_on_event(
+        event,
+        session_attributes,
+        prev_user_id,
+        buffer_insert \\ &WriteBuffer.insert/1
+      ) do
+    lock_requested_at = System.monotonic_time()
+
+    Plausible.Cache.Adapter.with_lock(
+      :sessions,
+      {event.site_id, event.user_id},
+      @lock_timeout,
+      fn ->
+        lock_duration = System.monotonic_time() - lock_requested_at
+        :telemetry.execute(@lock_telemetry_event, %{duration: lock_duration}, %{})
+        found_session = find_session(event, event.user_id) || find_session(event, prev_user_id)
+
+        handle_event(event, found_session, session_attributes, buffer_insert)
+      end
+    )
+  end
+
   def on_event(event, session_attributes, prev_user_id, opts \\ []) do
     buffer_insert = Keyword.get(opts, :buffer_insert, &WriteBuffer.insert/1)
     skip_balancer? = Keyword.get(opts, :skip_balancer?, false)
@@ -117,7 +139,7 @@ defmodule Plausible.Session.CacheStore do
     }
   end
 
-  defp new_session_from_event(event, session_attributes) do
+  def new_session_from_event(event, session_attributes) do
     %Plausible.ClickhouseSessionV2{
       sign: 1,
       session_id: Plausible.ClickhouseSessionV2.random_uint64(),
