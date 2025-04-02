@@ -66,6 +66,7 @@ Plausible.ConfigHelpers.html
 Plausible.CrmExtensions.html
 Plausible.DataCase.html
 Plausible.DataMigration.AcquisitionChannel.html
+Plausible.DataMigration.BackfillTeamsHourlyRequestLimit.html
 Plausible.DataMigration.CleanUpDemoSiteReferrerSource.html
 Plausible.DataMigration.ClickhouseRepo.html
 Plausible.DataMigration.LocationsSync.html
@@ -135,7 +136,10 @@ Plausible.Plugins.API.Goals.html
 Plausible.Plugins.API.SharedLinks.html
 Plausible.Plugins.API.Token.html
 Plausible.Plugins.API.Tokens.html
+Plausible.Plugs.AuthorizeTeamAccess.html
+Plausible.PromEx.Buckets.html
 Plausible.PromEx.Plugins.PlausibleMetrics.html
+Plausible.PromEx.StripedPeep.html
 Plausible.PromEx.html
 Plausible.Props.html
 Plausible.Purge.html
@@ -149,6 +153,8 @@ Plausible.Segments.Segment.html
 Plausible.Segments.html
 Plausible.Sentry.Client.html
 Plausible.SentryFilter.html
+Plausible.Session.Balancer.html
+Plausible.Session.BalancerSupervisor.html
 Plausible.Session.CacheStore.html
 Plausible.Session.Salts.html
 Plausible.Shield.CountryRule.html
@@ -216,9 +222,9 @@ Plausible.Stats.SQL.SpecialMetrics.html
 Plausible.Stats.SQL.WhereBuilder.html
 Plausible.Stats.Sampling.html
 Plausible.Stats.SamplingCache.html
-Plausible.Stats.ScrollDepth.html
 Plausible.Stats.TableDecider.html
 Plausible.Stats.Time.html
+Plausible.Stats.TimeOnPage.html
 Plausible.Stats.Timeseries.html
 Plausible.Stats.Util.html
 Plausible.Stats.html
@@ -417,7 +423,6 @@ PlausibleWeb.Plugs.AuthorizePluginsAPI.html
 PlausibleWeb.Plugs.AuthorizePublicAPI.html
 PlausibleWeb.Plugs.AuthorizeSiteAccess.html
 PlausibleWeb.Plugs.ErrorHandler.html
-PlausibleWeb.Plugs.FeatureFlagCheckPlug.html
 PlausibleWeb.Plugs.MaybeDisableRegistration.html
 PlausibleWeb.Plugs.NoRobots.html
 PlausibleWeb.Plugs.UserSessionTouch.html
@@ -462,8 +467,8 @@ dist/lato-latin-ext-300-normal-VPGGJKJL.woff2
 dist/lato-latin-ext-400-normal-N27NCBWW.woff2
 dist/lato-latin-ext-700-normal-Q2L5DVMW.woff2
 dist/remixicon-NKANDIL5.woff2
-dist/search_data-CCFDD530.js
-dist/sidebar_items-F732B91E.js
+dist/search_data-A9F5D80E.js
+dist/sidebar_items-4C0AB7BD.js
 index.html
 readme.html
 search.html
