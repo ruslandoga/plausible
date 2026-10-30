@@ -14,7 +14,7 @@
 
     <script src="dist/handlebars.runtime-NWIB6V2M.js"></script>
     <script src="dist/handlebars.templates-K7URE6B4.js"></script>
-    <script src="dist/sidebar_items-1EBF74D7.js"></script>
+    <script src="dist/sidebar_items-FD6E44E7.js"></script>
     <script src="docs_config.js"></script>
     <script async src="dist/html-PVRIOB7F.js"></script>
 
@@ -46,7 +46,7 @@
     <div class="sidebar-projectInfo">
 
         <a href="readme.html" class="sidebar-projectImage">
-          <img src="assets/logo.png" alt="Plausible" />
+          <img src="assets/logo.svg" alt="Plausible" />
         </a>
 
       <div>
@@ -150,6 +150,8 @@ Pages
     <a href="ObanErrorReporter.html" translate="no">ObanErrorReporter</a>
 
   </div>
+
+    <div class="summary-synopsis"><p>Handler module for processing Oban errors. </p></div>
 
 </div>
 <div class="summary-row">
@@ -300,6 +302,8 @@ This module will potentially augment db operations with transaction wrappers.</p
 
   </div>
 
+    <div class="summary-synopsis"><p>Functions for computing and comparing against Bcrypt hashed passwords.</p></div>
+
 </div>
 <div class="summary-row">
   <div class="summary-signature">
@@ -378,6 +382,16 @@ metadata XML or inputting required data one by one.</p></div>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Plausible.Auth.Scopes.html" translate="no">Plausible.Auth.Scopes</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>This module enumerates the scopes that any particular
+authorization grant can be limited to.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Plausible.Auth.TOTP.html" translate="no">Plausible.Auth.TOTP</a>
 
   </div>
@@ -437,6 +451,8 @@ secrets of users who enable it in case the primary vault fails.</p></div>
 
   </div>
 
+    <div class="summary-synopsis"><p>Functions for signing and verifying single-use tokens.</p></div>
+
 </div>
 <div class="summary-row">
   <div class="summary-signature">
@@ -471,18 +487,9 @@ secrets of users who enable it in case the primary vault fails.</p></div>
 
   </div>
 
-    <div class="summary-synopsis"><p>Handles Plausible billing subscription lifecycle events (creation, update, cancellation, payment success), 
-Paddle API, team assignment, and notification logic. Provides helpers for formatting prices, 
-managing subscription status, and updating team-related billing state.</p></div>
-
-</div>
-<div class="summary-row">
-  <div class="summary-signature">
-    <a href="Plausible.Billing.DevPaddleApiMock.html" translate="no">Plausible.Billing.DevPaddleApiMock</a>
-
-  </div>
-
-    <div class="summary-synopsis"><p>This module mocks API requests made to Paddle in the :dev environment.</p></div>
+    <div class="summary-synopsis"><p>Billing facade: manual subscriptions, plan change previews, enterprise plan lookup,
+price formatting and notice titles. Subscription lifecycle events coming from the payment
+provider are applied through <a href="Plausible.Billing.SubscriptionState.html"><code class="inline">Plausible.Billing.SubscriptionState</code></a>.</p></div>
 
 </div>
 <div class="summary-row">
@@ -547,9 +554,76 @@ team member limit.</p></div>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
-    <a href="Plausible.Billing.PaddleApi.html" translate="no">Plausible.Billing.PaddleApi</a>
+    <a href="Plausible.Billing.MigrationAudit.html" translate="no">Plausible.Billing.MigrationAudit</a>
 
   </div>
+
+    <div class="summary-synopsis"><p>Read-only audit report for the Paddle Classic-&gt;Billing migration.
+Paddle is only called when explicitly asked for with <code class="inline">catalog: true</code>,
+and then with read-only requests.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Plausible.Billing.MigrationAudit.ClassicCatalog.html" translate="no">Plausible.Billing.MigrationAudit.ClassicCatalog</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Part of the Paddle Billing migration audit that needs Paddle Classic: the
+plan catalog (which plans have prices in several currencies, and which kind of
+plan each one is) and subscription modifiers. It only makes read-only calls
+(<code class="inline">list_plans</code> and <code class="inline">list_modifiers</code>) and the output is aggregated: plan names
+and descriptions (customer names, mostly) are never included.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Plausible.Billing.MigrationAudit.Subscribers.html" translate="no">Plausible.Billing.MigrationAudit.Subscribers</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Part of the Paddle Billing migration audit fetched from local db.
+How subscribers are distributed by status, what they effectively
+pay, and how enterprise (customer-specific) plans look. Read-only, and all
+output is aggregated, no customer identifiers.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Plausible.Billing.PaddleClassic.html" translate="no">Plausible.Billing.PaddleClassic</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Entry point to the Paddle Classic integration: the HTTP client, webhook
+handling and the mix tasks that talk to Classic all live under this namespace.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Plausible.Billing.PaddleClassic.Api.html" translate="no">Plausible.Billing.PaddleClassic.Api</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Paddle API HTTP client.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Plausible.Billing.PaddleClassic.DevApiMock.html" translate="no">Plausible.Billing.PaddleClassic.DevApiMock</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>This module mocks API requests made to Paddle in the :dev environment.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Plausible.Billing.PaddleClassic.Webhooks.html" translate="no">Plausible.Billing.PaddleClassic.Webhooks</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Handles Paddle Classic webhook alerts: parses the payloads into subscription
+attributes and hands them to <a href="Plausible.Billing.SubscriptionState.html"><code class="inline">Plausible.Billing.SubscriptionState</code></a>.</p></div>
 
 </div>
 <div class="summary-row">
@@ -557,6 +631,8 @@ team member limit.</p></div>
     <a href="Plausible.Billing.Plans.html" translate="no">Plausible.Billing.Plans</a>
 
   </div>
+
+    <div class="summary-synopsis"><p>Functions for retrieving subscription plans and their pricing.</p></div>
 
 </div>
 <div class="summary-row">
@@ -574,6 +650,8 @@ team member limit.</p></div>
 
   </div>
 
+    <div class="summary-synopsis"><p>Api for managing team's lock state.</p></div>
+
 </div>
 <div class="summary-row">
   <div class="summary-signature">
@@ -584,6 +662,15 @@ team member limit.</p></div>
     <div class="summary-synopsis"><p>The subscription statuses are stored in Paddle. They can only be changed
 through Paddle webhooks, which always send the current subscription status
 via the payload.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Plausible.Billing.SubscriptionState.html" translate="no">Plausible.Billing.SubscriptionState</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Provider-independent application of subscription state changes.</p></div>
 
 </div>
 <div class="summary-row">
@@ -796,6 +883,8 @@ locale names for presentation purposes.</p></div>
 
   </div>
 
+    <div class="summary-synopsis"><p>Repository for querying Clickhouse database.</p></div>
+
 </div>
 <div class="summary-row">
   <div class="summary-signature">
@@ -820,6 +909,8 @@ locale names for presentation purposes.</p></div>
     <a href="Plausible.ConfigHelpers.html" translate="no">Plausible.ConfigHelpers</a>
 
   </div>
+
+    <div class="summary-synopsis"><p>Helpers for parsing configuration values from env.</p></div>
 
 </div>
 <div class="summary-row">
@@ -909,6 +1000,15 @@ run via remote shell or otherwise (TBD).</p></div>
   </div>
 
     <div class="summary-synopsis"><p>Creates dictionaries and functions to calculate acquisition channel in ClickHouse</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Plausible.DataMigration.BackfillFunnelType.html" translate="no">Plausible.DataMigration.BackfillFunnelType</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Backfill and sync funnel_type for all funnels out of sync.</p></div>
 
 </div>
 <div class="summary-row">
@@ -1151,6 +1251,26 @@ this allows for mocking DNS lookups in tests.</p></div>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Plausible.EmailSuppression.html" translate="no">Plausible.EmailSuppression</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>A record of email addresses we should not send transactional mail to,
+because Postmark has reported it as bouncing or complaining.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Plausible.EmailSuppressions.html" translate="no">Plausible.EmailSuppressions</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Tracks email addresses we should not attempt to send transactional mail to
+and guards <a href="Plausible.Mailer.html"><code class="inline">Plausible.Mailer</code></a> against sending to them.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Plausible.Event.SystemEvents.html" translate="no">Plausible.Event.SystemEvents</a>
 
   </div>
@@ -1204,6 +1324,16 @@ A funnel consists of several steps (here: 2..8).</p></div>
   </div>
 
     <div class="summary-synopsis"><p>Compile-time convenience constants for funnel characteristics.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Plausible.Funnel.DynamicStep.html" translate="no">Plausible.Funnel.DynamicStep</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>This module defines the database schema for a single Dynamic Funnel step.
+See: <a href="Plausible.Funnel.html"><code class="inline">Plausible.Funnel</code></a> for more information.</p></div>
 
 </div>
 <div class="summary-row">
@@ -1827,6 +1957,73 @@ locally, or when driving it from Playwright e2e specs.</p></div>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Plausible.OAuth.html" translate="no">Plausible.OAuth</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Minimal OAuth 2.1 authorization server used to authenticate remote MCP
+connectors (e.g. Claude) against Plausible.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Plausible.OAuth.AuthorizationCode.html" translate="no">Plausible.OAuth.AuthorizationCode</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Short-lived, single-use OAuth 2.1 authorization code.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Plausible.OAuth.CIMD.html" translate="no">Plausible.OAuth.CIMD</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>This module fetches and validates <a href="https://datatracker.ietf.org/doc/draft-ietf-oauth-client-id-metadata-document/">Client ID Metadata Documents</a>.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Plausible.OAuth.Grant.html" translate="no">Plausible.OAuth.Grant</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>A connection between one of a user's teams and an OAuth client, together with
+the access/refresh token pair currently issued against it.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Plausible.OAuth.PKCE.html" translate="no">Plausible.OAuth.PKCE</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>PKCE (<a href="https://www.rfc-editor.org/rfc/rfc7636.html">RFC 7636</a>) verification for
+the authorization code flow.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Plausible.OAuth.ProtectedResources.html" translate="no">Plausible.OAuth.ProtectedResources</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>The protected resources the OAuth authorization server will issue tokens for.
+Each authorization grant is associated with a particular resource.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Plausible.OAuth.Token.html" translate="no">Plausible.OAuth.Token</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Generates and hashes OAuth access tokens and authorization codes.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Plausible.OpenTelemetry.BeamMetrics.html" translate="no">Plausible.OpenTelemetry.BeamMetrics</a>
 
   </div>
@@ -1979,9 +2176,20 @@ if it has SSO setup with Force SSO policy.  </p></div>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Plausible.Postmark.html" translate="no">Plausible.Postmark</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Minimal client for the parts of Postmark's HTTP API</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Plausible.PromEx.html" translate="no">Plausible.PromEx</a>
 
   </div>
+
+    <div class="summary-synopsis"><p>Entry point for Prometheus metrics definitions and configuration.</p></div>
 
 </div>
 <div class="summary-row">
@@ -1990,7 +2198,7 @@ if it has SSO setup with Force SSO policy.  </p></div>
 
   </div>
 
-    <div class="summary-synopsis"><p>Adapts <a href="https://hexdocs.pm/peep/3.4.2/Peep.html"><code class="inline">Peep</code></a> for <a href="https://hexdocs.pm/prom_ex/1.11.0/PromEx.html"><code class="inline">PromEx</code></a>.</p></div>
+    <div class="summary-synopsis"><p>Adapts <a href="https://hexdocs.pm/peep/4.4.0/Peep.html"><code class="inline">Peep</code></a> for <a href="https://hexdocs.pm/prom_ex/1.12.0/PromEx.html"><code class="inline">PromEx</code></a>.</p></div>
 
 </div>
 <div class="summary-row">
@@ -2008,7 +2216,7 @@ if it has SSO setup with Force SSO policy.  </p></div>
 
   </div>
 
-    <div class="summary-synopsis"><p>&quot;Striped&quot; storage based on <a href="https://hexdocs.pm/prom_ex/1.11.0/PromEx.Storage.Peep.html"><code class="inline">PromEx.Storage.Peep</code></a>.</p></div>
+    <div class="summary-synopsis"><p>&quot;Striped&quot; storage based on <a href="https://hexdocs.pm/prom_ex/1.12.0/PromEx.Storage.Peep.html"><code class="inline">PromEx.Storage.Peep</code></a>.</p></div>
 
 </div>
 <div class="summary-row">
@@ -2117,6 +2325,8 @@ hostnames reaching internal, private or local network space</p></div>
 
   </div>
 
+    <div class="summary-synopsis"><p>Custom HTTP client configuration for Sentry integration using Finch.</p></div>
+
 </div>
 <div class="summary-row">
   <div class="summary-signature">
@@ -2159,6 +2369,8 @@ hostnames reaching internal, private or local network space</p></div>
     <a href="Plausible.Session.Salts.html" translate="no">Plausible.Session.Salts</a>
 
   </div>
+
+    <div class="summary-synopsis"><p>Genserver caching salts and managing their rotation.</p></div>
 
 </div>
 <div class="summary-row">
@@ -2441,6 +2653,8 @@ user, supporting alphanumeric or traffic-based sorting over the last 24 hours.</
 
   </div>
 
+    <div class="summary-synopsis"><p>Entry point functions for building stats queries.</p></div>
+
 </div>
 <div class="summary-row">
   <div class="summary-signature">
@@ -2457,6 +2671,8 @@ user, supporting alphanumeric or traffic-based sorting over the last 24 hours.</
 
   </div>
 
+    <div class="summary-synopsis"><p>Helper functions for uniformly calculating percent changes of metrics.</p></div>
+
 </div>
 <div class="summary-row">
   <div class="summary-signature">
@@ -2472,6 +2688,8 @@ user, supporting alphanumeric or traffic-based sorting over the last 24 hours.</
     <a href="Plausible.Stats.CurrentVisitors.html" translate="no">Plausible.Stats.CurrentVisitors</a>
 
   </div>
+
+    <div class="summary-synopsis"><p>API for querying current number of visitors for real-time stats.</p></div>
 
 </div>
 <div class="summary-row">
@@ -2517,6 +2735,8 @@ to be filled in by each specific report.</p></div>
     <a href="Plausible.Stats.FilterSuggestions.html" translate="no">Plausible.Stats.FilterSuggestions</a>
 
   </div>
+
+    <div class="summary-synopsis"><p>Functions for retrieving dashboard filters suggestions.</p></div>
 
 </div>
 <div class="summary-row">
@@ -2765,6 +2985,15 @@ for dimensions and metrics used in query SELECT statement.</p></div>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Plausible.Stats.SQL.GoalMatching.html" translate="no">Plausible.Stats.SQL.GoalMatching</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Builds the matching goal indices for an <code class="inline">event:goal</code> breakdown.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Plausible.Stats.SQL.SpecialMetrics.html" translate="no">Plausible.Stats.SQL.SpecialMetrics</a>
 
   </div>
@@ -2849,11 +3078,40 @@ and metrics, with the purpose of reducing the number of queries and JOINs needed
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Plausible.TeamDeletionSchedule.html" translate="no">Plausible.TeamDeletionSchedule</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Schema for tracking the notify-delete lifecycle of teams whose trial
+or subscription has expired, ahead of their stats being removed.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Plausible.TeamDeletionSchedules.html" translate="no">Plausible.TeamDeletionSchedules</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Context for scheduling inactive teams deletion (trial expired or subscription
+churned).</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Plausible.Teams.html" translate="no">Plausible.Teams</a>
 
   </div>
 
     <div class="summary-synopsis"><p>Core context of teams.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Plausible.Teams.DeletionSchedule.html" translate="no">Plausible.Teams.DeletionSchedule</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Inactive team deletion schedule</p></div>
 
 </div>
 <div class="summary-row">
@@ -2950,25 +3208,31 @@ transfers.</p></div>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
-    <a href="Plausible.Teams.Management.Layout.html" translate="no">Plausible.Teams.Management.Layout</a>
+    <a href="Plausible.Teams.Invitations.UpdateRole.html" translate="no">Plausible.Teams.Invitations.UpdateRole</a>
 
   </div>
 
-    <div class="summary-synopsis"><p>Abstraction for team membership(s) layout - provides a high level CRUD for
-setting up team memberships, including invitations. Persisting the layout,
-effectively takes care of delegating the operations to specialized services
-and sending out e-mail notifications on success, if need be.
-To be used in UIs allowing team memberships adjustments.</p></div>
+    <div class="summary-synopsis"><p>Service for changing the role of a pending team invitation.</p></div>
 
 </div>
 <div class="summary-row">
   <div class="summary-signature">
-    <a href="Plausible.Teams.Management.Layout.Entry.html" translate="no">Plausible.Teams.Management.Layout.Entry</a>
+    <a href="Plausible.Teams.Management.Roster.html" translate="no">Plausible.Teams.Management.Roster</a>
 
   </div>
 
-    <div class="summary-synopsis"><p>Module representing a single Team Layout element and all its state
-transitions, including persistence options.</p></div>
+    <div class="summary-synopsis"><p>Read-only list of a team's members and pending invitations, keyed by e-mail,
+for rendering the team management screen.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Plausible.Teams.Management.Roster.Entry.html" translate="no">Plausible.Teams.Management.Roster.Entry</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>A single member or pending invitation in a <a href="Plausible.Teams.Management.Roster.html"><code class="inline">Plausible.Teams.Management.Roster</code></a>.
+<code class="inline">source</code> is the membership or invitation struct the entry was built from.</p></div>
 
 </div>
 <div class="summary-row">
@@ -3054,6 +3318,15 @@ transitions, including persistence options.</p></div>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Plausible.Teams.TeamRolePermissions.html" translate="no">Plausible.Teams.TeamRolePermissions</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Rules for who is allowed to change which team roles.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Plausible.Teams.Test.html" translate="no">Plausible.Teams.Test</a>
 
   </div>
@@ -3115,6 +3388,8 @@ re-record the cassettes anyway).</p></div>
 
   </div>
 
+    <div class="summary-synopsis"><p>Site light/dark themes definitions.</p></div>
+
 </div>
 <div class="summary-row">
   <div class="summary-signature">
@@ -3166,9 +3441,20 @@ grace periods and notifies via email.</p></div>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="Plausible.Workers.CleanEmailSuppressions.html" translate="no">Plausible.Workers.CleanEmailSuppressions</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Daily job garbage-collecting e-mail suppressions</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="Plausible.Workers.CleanInvitations.html" translate="no">Plausible.Workers.CleanInvitations</a>
 
   </div>
+
+    <div class="summary-synopsis"><p>Worker hoovering expired invitations.</p></div>
 
 </div>
 <div class="summary-row">
@@ -3188,6 +3474,18 @@ grace periods and notifies via email.</p></div>
 
     <div class="summary-synopsis"><p>Cleans deleted site data from ClickHouse asynchronously, using lightweight
 deletes (except for ingest counters).</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Plausible.Workers.ExecuteTeamDeletions.html" translate="no">Plausible.Workers.ExecuteTeamDeletions</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Executes deletions for schedules whose reminder has been sent and whose
+deletion_date has arrived: deletes the team's sites (and queues their
+stats for removal) - the team itself and its settings/subscription
+history are left intact. Marks the schedule completed.</p></div>
 
 </div>
 <div class="summary-row">
@@ -3235,6 +3533,8 @@ To avoid blocking the queue, a timeout of 15 minutes is enforced.</p></div>
 
   </div>
 
+    <div class="summary-synopsis"><p>Worker sending emails about upcoming renewal of annual subscriptions.</p></div>
+
 </div>
 <div class="summary-row">
   <div class="summary-signature">
@@ -3259,6 +3559,20 @@ To avoid blocking the queue, a timeout of 15 minutes is enforced.</p></div>
     <a href="Plausible.Workers.RotateSalts.html" translate="no">Plausible.Workers.RotateSalts</a>
 
   </div>
+
+    <div class="summary-synopsis"><p>Worker rotating session salts.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Plausible.Workers.ScanInactiveTeams.html" translate="no">Plausible.Workers.ScanInactiveTeams</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Finds teams whose trial or subscription has expired and schedules them
+for the stats deletion pipeline. Reactivation is handled
+separately and immediately, via <a href="Plausible.TeamDeletionSchedules.html#cancel_for_team/1"><code class="inline">Plausible.TeamDeletionSchedules.cancel_for_team/1</code></a>
+called from <a href="Plausible.Billing.html"><code class="inline">Plausible.Billing</code></a>'s webhook handlers.</p></div>
 
 </div>
 <div class="summary-row">
@@ -3286,12 +3600,27 @@ a trial and caches the result in the <code class="inline">trial_prospects</code>
 
   </div>
 
+    <div class="summary-synopsis"><p>Worker sending reminders about checking status, provided they are collected already.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Plausible.Workers.SendDeletionNotifications.html" translate="no">Plausible.Workers.SendDeletionNotifications</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Sends the deletion pipeline reminder notices
+(backlog trials, and all churned subscriptions) - steady state
+teams get notified via AcceptTrafficUntil</p></div>
+
 </div>
 <div class="summary-row">
   <div class="summary-signature">
     <a href="Plausible.Workers.SendEmailReport.html" translate="no">Plausible.Workers.SendEmailReport</a>
 
   </div>
+
+    <div class="summary-synopsis"><p>Worker sending weekly and monthly email reports to subscribed users.</p></div>
 
 </div>
 <div class="summary-row">
@@ -3329,6 +3658,16 @@ sent us engagement data in the past.</p></div>
   </div>
 
     <div class="summary-synopsis"><p>Oban service sending out traffic drop/spike notifications</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Plausible.Workers.UnsnoozeTeamDeletions.html" translate="no">Plausible.Workers.UnsnoozeTeamDeletions</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Restarts the notice cycle for schedules whose snooze has lapsed: still
+<code class="inline">:snoozed</code>, past their <code class="inline">snoozed_until</code> date.</p></div>
 
 </div>
 <div class="summary-row">
@@ -3388,9 +3727,28 @@ sent us engagement data in the past.</p></div>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
-    <a href="PlausibleWeb.Api.PaddleController.html" translate="no">PlausibleWeb.Api.PaddleController</a>
+    <a href="PlausibleWeb.Api.PaddleClassicController.html" translate="no">PlausibleWeb.Api.PaddleClassicController</a>
 
   </div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="PlausibleWeb.Api.PostmarkController.html" translate="no">PlausibleWeb.Api.PostmarkController</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Receives Postmark's Bounce, SpamComplaint and SubscriptionChange webhooks
+and records addresses in <a href="Plausible.EmailSuppressions.html"><code class="inline">Plausible.EmailSuppressions</code></a>.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="PlausibleWeb.Api.RateLimit.html" translate="no">PlausibleWeb.Api.RateLimit</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Rate limits are imposed on API callers to prevent overloading the server.</p></div>
 
 </div>
 <div class="summary-row">
@@ -3488,9 +3846,8 @@ benefits for Growth, Business, and Enterprise plans.</p></div>
 
   </div>
 
-    <div class="summary-synopsis"><p>Dotted progress indicator shown during the registration flow.
-One small dot per step in <a href="PlausibleWeb.Flows.html#steps/1"><code class="inline">PlausibleWeb.Flows.steps/1</code></a>, with completed
-and current steps highlighted.</p></div>
+    <div class="summary-synopsis"><p>Dotted progress indicator shown in the onboarding layout.
+One small dot per step, with completed and current steps highlighted.</p></div>
 
 </div>
 <div class="summary-row">
@@ -3594,6 +3951,15 @@ Handles search logic independently from other components</p></div>
   </div>
 
     <div class="summary-synopsis"><p>Component responsible for rendering search result cards for customer support resources</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="PlausibleWeb.CustomerSupport.Components.SuppressionWarning.html" translate="no">PlausibleWeb.CustomerSupport.Components.SuppressionWarning</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>A warning icon next to e-mail address, optionally linking to suppressions list</p></div>
 
 </div>
 <div class="summary-row">
@@ -3830,8 +4196,7 @@ to the Plausible frontend.</p></div>
 
   </div>
 
-    <div class="summary-synopsis"><p>Static compile-time definitions for user progress flows.
-See <a href="PlausibleWeb.Components.FlowProgress.html"><code class="inline">PlausibleWeb.Components.FlowProgress</code></a> for rendering capabilities.</p></div>
+    <div class="summary-synopsis"><p>Named identifiers and documentation for the onboarding/installation flows.</p></div>
 
 </div>
 <div class="summary-row">
@@ -4024,6 +4389,18 @@ and diagnostics as a compact banner on top of the dashboard.</p></div>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="PlausibleWeb.Live.CustomerSupport.EmailSuppressions.html" translate="no">PlausibleWeb.Live.CustomerSupport.EmailSuppressions</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Customer Support page for reviewing e-mail suppressions (Postmark bounces
+and spam complaints) and manually reactivating false positives. See
+<a href="Plausible.EmailSuppressions.html"><code class="inline">Plausible.EmailSuppressions</code></a> for how suppressions are recorded and
+enforced.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="PlausibleWeb.Live.CustomerSupport.Site.html" translate="no">PlausibleWeb.Live.CustomerSupport.Site</a>
 
   </div>
@@ -4084,9 +4461,7 @@ cached <code class="inline">trial_prospects</code> table populated daily by
 
   </div>
 
-    <div class="summary-synopsis"><p>Phoenix LiveComponent that renders a form used for setting up funnels.
-Makes use of dynamically placed <code class="inline">PlausibleWeb.Live.FunnelSettings.ComboBox</code> components
-to allow building searchable funnel definitions out of list of goals available.</p></div>
+    <div class="summary-synopsis"><p>Phoenix LiveComponent that renders a form used for setting up dynamic funnels.</p></div>
 
 </div>
 <div class="summary-row">
@@ -4242,6 +4617,15 @@ select element replacement, embeddable in dead views.</p></div>
   </div>
 
     <div class="summary-synopsis"><p>LiveView for registration form.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="PlausibleWeb.Live.RegistrationContext.html" translate="no">PlausibleWeb.Live.RegistrationContext</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Live context toggling registration according to selfhosted state.</p></div>
 
 </div>
 <div class="summary-row">
@@ -4410,11 +4794,20 @@ mount and reconnect.</p></div>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="PlausibleWeb.Live.TeamForce2FASettings.html" translate="no">PlausibleWeb.Live.TeamForce2FASettings</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>LiveView for the &quot;Force Two-Factor Authentication (2FA)&quot; tile in team settings.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="PlausibleWeb.Live.TeamManagement.html" translate="no">PlausibleWeb.Live.TeamManagement</a>
 
   </div>
 
-    <div class="summary-synopsis"><p>Live view for enqueuing and applying team membership adjustments.</p></div>
+    <div class="summary-synopsis"><p>Live view for applying team membership adjustments.</p></div>
 
 </div>
 <div class="summary-row">
@@ -4435,6 +4828,15 @@ mount and reconnect.</p></div>
     <div class="summary-synopsis"><p>LiveView for the tracking tile on the site general settings page. Shows the
 installation status, allows toggling the measurements that are tracked
 automatically, and lists the ones that require manual setup.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="PlausibleWeb.Live.TwoFactorSettings.html" translate="no">PlausibleWeb.Live.TwoFactorSettings</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>LiveView for the &quot;Two-Factor Authentication (2FA)&quot; tile in account security settings.</p></div>
 
 </div>
 <div class="summary-row">
@@ -4477,11 +4879,36 @@ stateless <code class="inline">2026-07-28</code> revision of the protocol.</p></
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="PlausibleWeb.OAuth.AuthorizationRequest.html" translate="no">PlausibleWeb.OAuth.AuthorizationRequest</a>
+
+  </div>
+
+    <div class="summary-synopsis"><h3 id="responsibilities" class="section-heading">
+  <a href="#responsibilities" class="hover-link">
+    <i class="ri-link-m" aria-hidden="true"></i>
+  </a>
+  <span class="text">Responsibilities</span>
+</h3>
+<ul><li>parse query params submitted by the application that is requesting for authorization</li><li>fetch the app's metadata document</li><li>validate that the document and params make up a valid <a href="https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1#name-authorization-request">authorization request</a></li><li>provide utils to ensure that the valid request can be passed through the user's browser, without being tampered with</li></ul></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="PlausibleWeb.OAuth.AuthorizationResponse.html" translate="no">PlausibleWeb.OAuth.AuthorizationResponse</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Builds the <a href="https://datatracker.ietf.org/doc/html/draft-ietf-oauth-v2-1#name-authorization-response">authorization response</a>
+URL the user agent is redirected to, carrying either a code or an error.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="PlausibleWeb.OAuth.AuthorizeController.html" translate="no">PlausibleWeb.OAuth.AuthorizeController</a>
 
   </div>
 
-    <div class="summary-synopsis"><p>OAuth 2.1 authorization module.</p></div>
+    <div class="summary-synopsis"><p>OAuth 2.1 authorization controller.</p></div>
 
 </div>
 <div class="summary-row">
@@ -4962,6 +5389,15 @@ tests that require setting up a Plugins API connection.</p></div>
 </div>
 <div class="summary-row">
   <div class="summary-signature">
+    <a href="PlausibleWeb.Plugs.AuthorizeOAuthAPI.html" translate="no">PlausibleWeb.Plugs.AuthorizeOAuthAPI</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Plug for authorizing requests that carry an OAuth 2.1 Bearer access token.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
     <a href="PlausibleWeb.Plugs.AuthorizePluginsAPI.html" translate="no">PlausibleWeb.Plugs.AuthorizePluginsAPI</a>
 
   </div>
@@ -5081,6 +5517,8 @@ for version tracking and rollout logic.</p></div>
     <a href="PlausibleWeb.RequireLoggedOutPlug.html" translate="no">PlausibleWeb.RequireLoggedOutPlug</a>
 
   </div>
+
+    <div class="summary-synopsis"><p>Plug forcibly logging user out if they are authenticated.</p></div>
 
 </div>
 <div class="summary-row">
@@ -5249,6 +5687,15 @@ Authentication.</p></div>
     <div class="summary-synopsis"><p>Functions for user session management.</p></div>
 
 </div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="PlausibleWeb.VerifiedRoutes.html" translate="no">PlausibleWeb.VerifiedRoutes</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Convenience macro to be used everywhere where verified routes are used.</p></div>
+
+</div>
 
     </div>
   </section>
@@ -5273,35 +5720,6 @@ Authentication.</p></div>
 a subscription. On production, this action is initiated by
 a Paddle webhook. Currently, only the subscription status
 is changed with that action.</p></div>
-
-</div>
-<div class="summary-row">
-  <div class="summary-signature">
-    <a href="Mix.Tasks.CreatePaddleProdPlans.html" translate="no">mix create_paddle_prod_plans</a>
-
-  </div>
-
-    <div class="summary-synopsis"><h2 id="utility-for-creating-paddle-plans-for-production-use" class="section-heading">
-  <a href="#utility-for-creating-paddle-plans-for-production-use" class="hover-link">
-    <i class="ri-link-m" aria-hidden="true"></i>
-  </a>
-  <span class="text">Utility for creating Paddle plans for production use.</span>
-</h2>
-<p>Takes a single <code class="inline">filename</code> argument which should be of format
-<code class="inline">input_plans_v*.json</code>. That file should live in the <code class="inline">/priv</code> directory next
-to all other plans and it should contain the necessary information about
-the production plans to be created.</p></div>
-
-</div>
-<div class="summary-row">
-  <div class="summary-signature">
-    <a href="Mix.Tasks.CreatePaddleSandboxPlans.html" translate="no">mix create_paddle_sandbox_plans</a>
-
-  </div>
-
-    <div class="summary-synopsis"><p>Utility for creating Sandbox plans that are used on staging. The product of
-this task is a <code class="inline">sandbox_plans_v*.json</code> file matching with the production
-plans, just with the monthly/yearly product_id's of the sandbox plans.</p></div>
 
 </div>
 <div class="summary-row">
@@ -5339,9 +5757,40 @@ because country shapes are identified in the geography dataset only with their a
 </div>
 <div class="summary-row">
   <div class="summary-signature">
-    <a href="Mix.Tasks.PullSandboxSubscription.html" translate="no">mix pull_sandbox_subscription</a>
+    <a href="Mix.Tasks.PaddleClassic.CreateProdPlans.html" translate="no">mix paddle_classic.create_prod_plans</a>
 
   </div>
+
+    <div class="summary-synopsis"><h2 id="utility-for-creating-paddle-plans-for-production-use" class="section-heading">
+  <a href="#utility-for-creating-paddle-plans-for-production-use" class="hover-link">
+    <i class="ri-link-m" aria-hidden="true"></i>
+  </a>
+  <span class="text">Utility for creating Paddle plans for production use.</span>
+</h2>
+<p>Takes a single <code class="inline">filename</code> argument which should be of format
+<code class="inline">input_plans_v*.json</code>. That file should live in the <code class="inline">/priv</code> directory next
+to all other plans and it should contain the necessary information about
+the production plans to be created.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Mix.Tasks.PaddleClassic.CreateSandboxPlans.html" translate="no">mix paddle_classic.create_sandbox_plans</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Utility for creating Sandbox plans that are used on staging. The product of
+this task is a <code class="inline">sandbox_plans_v*.json</code> file matching with the production
+plans, just with the monthly/yearly product_id's of the sandbox plans.</p></div>
+
+</div>
+<div class="summary-row">
+  <div class="summary-signature">
+    <a href="Mix.Tasks.PaddleClassic.PullSandboxSubscription.html" translate="no">mix paddle_classic.pull_sandbox_subscription</a>
+
+  </div>
+
+    <div class="summary-synopsis"><p>Mix task for creating subscriptions in dev environment via Paddle API.</p></div>
 
 </div>
 <div class="summary-row">
